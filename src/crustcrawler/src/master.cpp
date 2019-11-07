@@ -2,9 +2,8 @@
 
 using namespace std;
 
-masterIntelligence::masterIntelligence(int argc, char **argv)
+masterIntelligence::masterIntelligence()
 {
-  ros::init(argc, argv, "master_node");
 
   trajectory_pub = n.advertise<std_msgs::Float64MultiArray>("/crustcrawler/trajectory", 10);
   joint_pub = n.advertise<sensor_msgs::JointState>("joint_states", 10);
@@ -15,6 +14,13 @@ masterIntelligence::masterIntelligence(int argc, char **argv)
   ros::spinOnce();
 
   gen_time = ros::Time::now();
+
+  for (int i = 0; i < 4; i++) {
+    a0[i] = 0;
+    a1[i] = 0;
+    a2[i] = 0;
+    a3[i] = 0;
+  }
 }
 
 //checks what gesture the myo detects
@@ -39,12 +45,11 @@ void masterIntelligence::calc_traj()
 {
   float t = ros::Time::now().sec - gen_time.sec;
   std_msgs::Float64MultiArray trajectories;
-  trajectories.data.resize(12);
   for (int i = 0; i < 4; i++)
   {
-    trajectories.data[i * 4] = a0[i] + a1[i] * t + a2[i] * pow(t, 2) + a3[i] * pow(t, 3);
-    trajectories.data[i * 4 + 1] = a1[i] + 2 * a2[i] * t + 3 * a3[i] * pow(t, 2);
-    trajectories.data[i * 4 + 2] = 2 * a2[i] + 6 * a3[i] * t;
+    trajectories.data.push_back(a0[i] + a1[i] * t + a2[i] * pow(t, 2) + a3[i] * pow(t, 3));
+    trajectories.data.push_back(a1[i] + 2 * a2[i] * t + 3 * a3[i] * pow(t, 2));
+    trajectories.data.push_back(2 * a2[i] + 6 * a3[i] * t);
   }
   trajectory_pub.publish(trajectories);
 }
@@ -255,20 +260,23 @@ void masterIntelligence::checkMyo()
     }
   }
 
+  // message declarations
+  sensor_msgs::JointState joint_state;
+
   //update joint_state
   joint_state.header.stamp = ros::Time::now();
-  joint_state.name.resize(5);
-  joint_state.position.resize(5);
-  joint_state.name[0] = "joint1";
-  joint_state.position[0] = pos[0];
-  joint_state.name[1] = "joint2";
-  joint_state.position[1] = pos[1];
-  joint_state.name[2] = "joint3";
-  joint_state.position[2] = pos[2];
-  joint_state.name[3] = "joint4";
-  joint_state.position[3] = pos[3];
-  joint_state.name[4] = "joint5";
-  joint_state.position[4] = -pos[3];
+
+  joint_state.name.push_back("joint1");
+  joint_state.name.push_back("joint2");
+  joint_state.name.push_back("joint3");
+  joint_state.name.push_back("joint4");
+  joint_state.name.push_back("joint5");
+
+  joint_state.position.push_back(pos[0]);
+  joint_state.position.push_back(pos[1]);
+  joint_state.position.push_back(pos[2]);
+  joint_state.position.push_back(pos[3]);
+  joint_state.position.push_back(pos[3]);
 
   //send the joint state and transform
   joint_pub.publish(joint_state);
@@ -276,7 +284,8 @@ void masterIntelligence::checkMyo()
 
 int main(int argc, char **argv)
 {
-  masterIntelligence master_node(argc, argv);
+  ros::init(argc, argv, "master_node");
+  masterIntelligence master_node;
   while (ros::ok())
   {
     master_node.checkMyo();

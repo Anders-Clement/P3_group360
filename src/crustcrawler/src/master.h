@@ -21,7 +21,7 @@ using namespace std;
 
 class masterIntelligence {
 public:
-    masterIntelligence(int argc, char** argv);
+    masterIntelligence();
     uint8_t gesture = 0;
     float theta[5];
     float thetadot[5];
@@ -52,9 +52,6 @@ private:
     ros::Publisher joint_pub;
     ros::Subscriber gest_str_sub;
     ros::Subscriber get_angle_vel;
-
-      // message declarations
-    sensor_msgs::JointState joint_state;
 };
 
 
