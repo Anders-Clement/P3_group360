@@ -68,12 +68,8 @@ void masterIntelligence::get_angle_vel_callback(const std_msgs::Float64MultiArra
   calc_traj();
 }
 
-<<<<<<< HEAD
 /*
 <<<<<<< HEAD
-=======
-
->>>>>>> 4329c16904ef11c190a62d8236f99545fd7f4cb6
 */
 int main(int argc, char** argv) {
   ros::init(argc, argv, "state_publisher");
@@ -403,7 +399,7 @@ int main(int argc, char **argv)
   while (ros::ok())
   {
     master_node.checkMyo();
-    
+
     ros::spinOnce();
   }
 
