@@ -17,7 +17,7 @@ int main(int argc, char **argv)
 
   std_msgs::Int16 msg;
 
-  ros::Subscriber serial_sub = n.subscribe("arduino_to_pc", 10, arduino_callback);
+  ros::Subscriber serial_sub = n.subscribe("getAngleVel", 10, arduino_callback);
   ros::Publisher serial_pub = n.advertise<std_msgs::Int16>("pc_to_arduino", 10);
 
 

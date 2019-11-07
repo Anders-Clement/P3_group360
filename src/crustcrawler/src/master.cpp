@@ -190,6 +190,15 @@ int main(int argc, char** argv) {
 //send the joint state and transform
     joint_pub.publish(joint_state);
 
+    Vector3 input;
+    input.x = 0.0;
+    input.y = 0.0;
+    input.z = 0.0;
+
+    Vector3 pos = f_kin(input);
+
+    Vector3 result = inv_kin_closest(pos, input);
+
 // updeate and check for news in the subscribers
     ros::spinOnce();
 
@@ -216,6 +225,7 @@ void check_for_zero(Vector3 &input)
 
 Vector3 f_kin(Vector3 thetas)
 {
+
   Vector3 result;
   float pi = 3.1416;
   result.x = (11*cos(thetas.x)*cos(thetas.y + pi/2))/50 - (3*cos(thetas.x)*sin(thetas.z)*sin(thetas.y + pi/2))/20 + (3*cos(thetas.x)*cos(thetas.z)*cos(thetas.y + pi/2))/20;
