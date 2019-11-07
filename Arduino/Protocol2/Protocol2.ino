@@ -1,3 +1,8 @@
+//Motor baudrate
+#define motorBaudrate 115200
+//Pin for Request to Send.
+#define RTS_pin 11
+
 #include "Protocol_2.h"
 
 ProtocolController* controler_ptr;
@@ -10,7 +15,7 @@ bool up = true;
 
 
 void setup() {
-  controler_ptr = new ProtocolController();
+  controler_ptr = new ProtocolController(RTS_pin, motorBaudrate);
 
   Serial.begin(115200);
   pinMode(13, OUTPUT);
@@ -83,7 +88,7 @@ void killMySelf()
   startMotors();
   for (int i = 1; i < 6; i++)
     controler_ptr->setPosPGain(i, 50);
-    
+
   long posGoalA[5]; //goal A (upright position)
   long posGoalB[5]; //goal B (by the stop button
 

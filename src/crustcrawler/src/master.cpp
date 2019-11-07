@@ -68,7 +68,120 @@ void masterIntelligence::get_angle_vel_callback(const std_msgs::Float64MultiArra
   calc_traj();
 }
 
+<<<<<<< HEAD
+/*
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4329c16904ef11c190a62d8236f99545fd7f4cb6
+*/
+int main(int argc, char** argv) {
+  ros::init(argc, argv, "state_publisher");
+  ros::NodeHandle n;
+
+  trajectory_pub = n.advertise<std_msgs::Float64MultiArray>("/crustcrawler/trajectory",1);
+  ros::Publisher joint_pub = n.advertise<sensor_msgs::JointState>("joint_states", 1);
+  //ros::Subscriber pose_sub = n.subscribe("myo_raw/pose", 10, myo_raw_pose_callback);
+  ros::Subscriber gest_str_sub = n.subscribe("myo_raw/myo_gest_str", 10, myo_raw_gest_str_callback);
+  ros::Subscriber get_angle_vel = n.subscribe("/crustcrawler/getAngleVel", 10, get_angle_vel_callback);
+
+  ros::Rate loop_rate(1);
+
+  //const double degree = M_PI/180;
+
+  // message declarations
+  sensor_msgs::JointState joint_state;
+
+  int mode = 0;
+  float pos[4];
+  float move_pose = 0.02;
+
+  while (ros::ok()) {
+    gen_time = ros::Time::now();
+
+    if (gesture == 6){
+      if (mode == 3){
+        mode = 1;
+      }
+      else{
+        mode += 1;
+      }
+      ROS_INFO_STREAM(mode);
+    }
+    if(gesture != 0 && gesture != 1 && gesture != 6){
+      switch (mode) {
+        case 1: switch(gesture){
+          case 2: pos[0] += move_pose; break;
+          case 3: pos[0] -= move_pose; break;
+          case 4: pos[1] += move_pose; break;
+          case 5: pos[1] -= move_pose; break;
+        } break;
+        case 2: switch(gesture){
+          case 2: pos[2] += move_pose; break;
+          case 3: pos[2] -= move_pose; break;
+          case 4: pos[3] += move_pose; break;
+          case 5: pos[3] -= move_pose; break;
+        } break;
+        case 3: switch(gesture){
+          case 2:
+            float goalang[4] = {0,0,0,0};
+            float goalvel[4] = {0,0,0,0};
+            for (size_t i = 0; i < 4; i++) {
+            float tf = 1;
+            a0[i] = theta[i];
+            a1[i] = thetadot[i];
+            a2[i] = 3/(pow(tf,2))*(goalang[i]-theta[i])-2/tf*thetadot[i]-1/tf*goalvel[i];
+            a3[i] = -2/(pow(tf,3))*(goalang[i]-theta[i])+1/(pow(tf,2))*(goalvel[i]+thetadot[i]);
+
+          } break;
+        } break;
+      }
+    }
+
+    //update joint_state
+    joint_state.header.stamp = ros::Time::now();
+    joint_state.name.resize(5);
+    joint_state.position.resize(5);
+    joint_state.name[0] ="joint1";
+    joint_state.position[0] = pos[0];
+    joint_state.name[1] ="joint2";
+    joint_state.position[1] = pos[1];
+    joint_state.name[2] ="joint3";
+    joint_state.position[2] = pos[2];
+    joint_state.name[3] ="joint4";
+    joint_state.position[3] = pos[3];
+    joint_state.name[4] ="joint5";
+    joint_state.position[4] = -pos[3];
+
+//send the joint state and transform
+    joint_pub.publish(joint_state);
+
+    Vector3 input;
+    input.x = 0.0;
+    input.y = 0.0;
+    input.z = 0.0;
+
+    Vector3 pos = f_kin(input);
+
+    Vector3 result = inv_kin_closest(pos, input);
+
+// updeate and check for news in the subscribers
+    ros::spinOnce();
+
+// This will adjust as needed per iteration
+    loop_rate.sleep();
+  }
+
+
+  return 0;
+}
+
+
+
+void check_for_zero(Vector3 &input)
+=======
 void masterIntelligence::check_for_zero(Vector3 &input)
+>>>>>>> ad318009dd968e324940eac1bd90406236d2569d
 {
   float zero_value = 0.0001;
   if (input.x == 0.0)
@@ -87,6 +200,7 @@ void masterIntelligence::check_for_zero(Vector3 &input)
 
 Vector3 masterIntelligence::f_kin(Vector3 thetas)
 {
+
   Vector3 result;
   float pi = 3.1416;
   result.x = (11 * cos(thetas.x) * cos(thetas.y + pi / 2)) / 50 - (3 * cos(thetas.x) * sin(thetas.z) * sin(thetas.y + pi / 2)) / 20 + (3 * cos(thetas.x) * cos(thetas.z) * cos(thetas.y + pi / 2)) / 20;
