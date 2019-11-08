@@ -1,7 +1,7 @@
 #include "Protocol_2.h"
 #include "Arduino.h"
 
-ProtocolController::ProtocolController(){
+ProtocolController::ProtocolController() {
   Serial1.begin(motorBaudrate);
   pinMode(RTS_Pin, OUTPUT);
   digitalWrite(RTS_Pin, LOW);
@@ -72,10 +72,12 @@ bool ProtocolController::writeFunction(unsigned char address, unsigned char *dat
   digitalWrite(RTS_Pin, LOW);
 
   unsigned char incomingBuffer[7];
+
   for (int i = 0; i < 7; i++) {
+    
     long startTime = millis();
     while (!Serial1.available()) {
-      if (millis() > startTime + 50) {  //time-out after 50ms
+      if (millis() > startTime + 2) {  //time-out after 2ms (happens occasionally with 1ms, but not at 2ms)
         Serial.println("time-out on packet recieve");
         return false;
       }
@@ -236,10 +238,32 @@ long ProtocolController::getPos(unsigned char address) {
   return readFunction(address, 132, 4);
 }
 
-long ProtocolController::getVel(unsigned char address){
+long ProtocolController::getVel(unsigned char address) {
   return readFunction(address, 128, 4);
 }
 
+void ProtocolController::setTorque(unsigned char address, short torque, short current_omega)
+{
+  short C1 =  190;    //0.2152 * 885    PWM is from 0.0-1.0 in 885 steps
+  short C2 =  122;    //0.1382 * 885
+  short PWM = torque * C1 + current_omega * C2; //PWM with values from 0-885 (per protocol)
+  //!!! ---   Omega must be in rads/sec, torque in Nm   --- !!! \\
+
+  if (PWM > 885)
+  {
+    Serial.println("setTorque PWM > 885, too high torque or omega!, clamping to 885");
+    PWM = 885;
+  }
+
+  unsigned char SendingArray[5];
+  SendingArray[0] = 0x03; //Write Commando
+  SendingArray[1] = 0x64; //mem address (address 100)
+  SendingArray[2] = 0x00;
+  SendingArray[3] = PWM & 0x00FF;
+  SendingArray[4] = (PWM >> 8) & 0x00FF;
+
+  writeFunction(address, SendingArray, 5);
+}
 
 unsigned short ProtocolController::update_crc(unsigned short crc_accum, unsigned char *data_blk_ptr, unsigned short data_blk_size)
 {

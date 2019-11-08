@@ -36,6 +36,7 @@ class ProtocolController {
     void setGoalCurrent(unsigned char address, short current);
     //Function til at sætte motor torque.
     void setCurrentLimit(unsigned char address, short current);
+    void setTorque(unsigned char address, short torque, short current_omega);
 
     //Set position af den pågældende motor.
     void setPos(unsigned char address, long setPosition);
