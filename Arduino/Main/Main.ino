@@ -3,11 +3,13 @@
 #include <ros.h>
 #include "std_msgs/Float64MultiArray.h"
 
+#define buzz_pin 48
 
 
 void enableTorque();
 void disableTorque();
 void publishAngleVel();
+long lastMessageTime;
 
 bool protectiveStop = false;
 ProtocolController* controler_ptr;
@@ -37,6 +39,8 @@ void setup()
   angleVel_msg.data = (float*) malloc(sizeof(float) * 10);
   //set length of msg, otherwise everything will not be sent
   angleVel_msg.data_length = 10;
+  
+  lastMessageTime = millis();
 }
 
 bool led = true;
@@ -44,10 +48,20 @@ bool led = true;
 void loop()
 {
   nh.spinOnce();
+  
+  if(millis() - lastMessageTime > 250) //no message received for 250ms, sound the alarm!
+  {
+    digitalWrite(buzz_pin, HIGH);
+    disableTorque();
+    delay(1000);
+    digitalWrite(buzz_pin, LOW);
+  }
 }
 
 void setTorque_callback(const std_msgs::Float64MultiArray& msg)
 {
+  lastMessageTime = millis();
+  
   long thetas[5];
   float velocities[5];
 
