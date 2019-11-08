@@ -9,13 +9,6 @@
 class ProtocolController {
   public:
 
-    //Fortæller om den sidste besked blev modtaget okay.
-    bool writeReturn = false;
-    //Array der holder den sidste modtaget pakke.
-    unsigned char packageBuffer[255];
-    //Int der fortæller hvor lang beskeden i bufferen er.
-    int packageBufferLength = 0;
-
     //Init thing til classen. (Constructor)
     ProtocolController();
 
@@ -36,13 +29,14 @@ class ProtocolController {
     void setGoalCurrent(unsigned char address, short current);
     //Function til at sætte motor torque.
     void setCurrentLimit(unsigned char address, short current);
+    //set torque, requires current speed of joint
     void setTorque(unsigned char address, short torque, short current_omega);
 
     //Set position af den pågældende motor.
     void setPos(unsigned char address, long setPosition);
-    //Få motors position.
+    //Get motor position
     long getPos(unsigned char address);
-
+    //get motor velocity
     long getVel(unsigned char address);
 
     //Set position PGain
@@ -61,6 +55,13 @@ class ProtocolController {
 
     //Function til at læse fra en motor, kommer tilbage med værdien af feltet.
     long readFunction(unsigned char address, int tableAdress, int dataLength);
+
+    //Fortæller om den sidste besked blev modtaget okay.
+    bool writeReturn = false;
+    //Array der holder den sidste modtaget pakke.
+    unsigned char packageBuffer[255];
+    //Int der fortæller hvor lang beskeden i bufferen er.
+    int packageBufferLength = 0;
 };
 
 #endif
