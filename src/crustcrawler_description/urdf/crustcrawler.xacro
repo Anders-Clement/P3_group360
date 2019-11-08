@@ -237,14 +237,14 @@
 
   <link name="gripper_left">
     <collision>
-      <origin xyz="0 0 1" rpy="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size=" ${LinkWidth} ${LinkWidth} ${LinkWidth}"/>
+        <mesh filename="package://crustcrawler_description/meshes/Grip.STL"/>
       </geometry>
     </collision>
 
     <visual>
-      <origin xyz="${-L3 + 0.001} 0.016   0" rpy="${M_pi/2} 0 ${M_pi/2}"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="package://crustcrawler_description/meshes/Grip.STL"/>
       </geometry>
@@ -264,14 +264,14 @@
 
   <link name="gripper_right">
     <collision>
-      <origin xyz="0 0 1" rpy="0 0 0"/>
+      <origin xyz="0 0 0" rpy="${M_pi} 0 0"/>
       <geometry>
-        <box size=" ${LinkWidth} ${LinkWidth} ${LinkWidth}"/>
+        <mesh filename="package://crustcrawler_description/meshes/Grip.STL"/>
       </geometry>
     </collision>
 
     <visual>
-      <origin xyz="${-L3 + 0.001} -0.016  0" rpy="${-M_pi/2} 0 ${-M_pi/2}"/>
+      <origin xyz="0 0 0" rpy="${M_pi} 0 0"/>
       <geometry>
         <mesh filename="package://crustcrawler_description/meshes/Grip.STL"/>
       </geometry>
