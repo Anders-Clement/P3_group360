@@ -2,6 +2,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
 #include <std_msgs/String.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <tf/transform_broadcaster.h>
 #include "std_msgs/Float64MultiArray.h"
 #include "math.h"
@@ -10,8 +11,7 @@
 #ifndef MASTER
 #define MASTER
 
-struct Vector3
-{
+struct Vector3{
 float x;
 float y;
 float z;
@@ -22,7 +22,7 @@ using namespace std;
 class masterIntelligence {
 public:
     masterIntelligence();
-    uint8_t gesture = 0;
+    int gesture = 0;
     float theta[5];
     float thetadot[5];
     ros::Time gen_time;
@@ -30,12 +30,17 @@ public:
     float a1[4];
     float a2[4];
     float a3[4];
+    float angles[3];
+
+    float pos[4];
+    bool firstRead = true;
 
     int mode = 0;
-    float move_pose = 0.02;
+    float move_pose = 0.00002;
 
     void myo_raw_gest_str_callback(const std_msgs::String::ConstPtr& msg);
     void get_angle_vel_callback(const std_msgs::Float64MultiArray::ConstPtr& msg);
+    void myo_raw_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& msg);
 
     void checkMyo();
 
@@ -52,6 +57,7 @@ private:
     ros::Publisher joint_pub;
     ros::Subscriber gest_str_sub;
     ros::Subscriber get_angle_vel;
+    ros::Subscriber pose_sub;
 };
 
 
