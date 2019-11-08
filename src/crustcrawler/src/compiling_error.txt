@@ -1,0 +1,4 @@
+/home/clement/dev/P3_group360/src/crustcrawler/src/master.cpp:2:10: fatal error: ros/ros.h: No such file or directory
+ #include <ros/ros.h>
+          ^~~~~~~~~~~
+compilation terminated.

@@ -51,6 +51,12 @@
   <gazebo reference="link3">
     <selfCollide>true</selfCollide>
   </gazebo>
+  <gazebo reference="gripper_left">
+    <selfCollide>true</selfCollide>
+  </gazebo>
+  <gazebo reference="gripper_right">
+    <selfCollide>true</selfCollide>
+  </gazebo>
 
 
   <!-- links, joints and transmissions -->
@@ -189,13 +195,13 @@
     <collision>
       <origin xyz="${L3/2} 0 ${d3}" rpy="0 0 0"/>
       <geometry>
-        <box size=" ${L3 - MotorOffset*2} ${LinkWidth} ${LinkHeight}"/>
+        <box size=" ${L3 - MotorOffset*2} ${LinkWidth/2} ${LinkHeight}"/>
       </geometry>
     </collision>
     <collision>
       <origin xyz="${L3 - 0.01} 0 ${d3}" rpy="0 0 0"/>
       <geometry>
-        <box size=" ${0.045} ${MotorLength} ${MotorWidth*2 - 0.005}"/>
+        <box size=" ${0.045} ${MotorLength/2} ${MotorWidth*2 - 0.005}"/>
       </geometry>
     </collision>
 
@@ -229,7 +235,7 @@
     <axis xyz="0 0 1"/>
     <parent link="link3"/>
     <child link="gripper_right"/>
-    <origin xyz="${L3 - 0.003} 0 -0.016" rpy="${-M_pi/2} 0 0"/>
+    <origin xyz="${L3 - 0.003} 0.003 -0.023" rpy="${-M_pi/2} 0 0"/>
     <dynamics damping="0.7"/>
   </joint> -->
 
@@ -237,14 +243,14 @@
 
   <link name="gripper_left">
     <collision>
-      <origin xyz="0 0 1" rpy="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size=" ${LinkWidth} ${LinkWidth} ${LinkWidth}"/>
+        <mesh filename="package://crustcrawler_description/meshes/Grip.STL"/>
       </geometry>
     </collision>
 
     <visual>
-      <origin xyz="${-L3 + 0.001} 0.016   0" rpy="${M_pi/2} 0 ${M_pi/2}"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="package://crustcrawler_description/meshes/Grip.STL"/>
       </geometry>
@@ -264,14 +270,14 @@
 
   <link name="gripper_right">
     <collision>
-      <origin xyz="0 0 1" rpy="0 0 0"/>
+      <origin xyz="0 0.0 0" rpy="${M_pi} 0 0"/>
       <geometry>
-        <box size=" ${LinkWidth} ${LinkWidth} ${LinkWidth}"/>
+        <mesh filename="package://crustcrawler_description/meshes/Grip.STL"/>
       </geometry>
     </collision>
 
     <visual>
-      <origin xyz="${-L3 + 0.001} -0.016  0" rpy="${-M_pi/2} 0 ${-M_pi/2}"/>
+      <origin xyz="0 0 0" rpy="${M_pi} 0 0"/>
       <geometry>
         <mesh filename="package://crustcrawler_description/meshes/Grip.STL"/>
       </geometry>

@@ -24,6 +24,9 @@ ros::Subscriber<std_msgs::Int16> sub("pc_to_arduino", &pc_callback);
 
 void setup()
 {
+  Serial.begin(115200);
+  nh.getHardware()->setBaud(115200);
+  
   nh.initNode();
   nh.advertise(pub);
   nh.subscribe(sub);
