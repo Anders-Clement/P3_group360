@@ -2,6 +2,9 @@
 #define PROTOCAL_H
 #include <Arduino.h>
 
+#define RTS_Pin 11
+#define motorBaudrate 1000000
+
 
 class ProtocolController {
   public:
@@ -14,7 +17,7 @@ class ProtocolController {
     int packageBufferLength = 0;
 
     //Init thing til classen. (Constructor)
-    ProtocolController(int pin, int baudrate);
+    ProtocolController();
 
     //Pinger den given motor.
     bool ping(unsigned char address);
@@ -39,6 +42,8 @@ class ProtocolController {
     //Få motors position.
     long getPos(unsigned char address);
 
+    long getVel(unsigned char address);
+
     //Set position PGain
     void ProtocolController::setPosPGain(unsigned char addres, int pGain);
 
@@ -55,9 +60,6 @@ class ProtocolController {
 
     //Function til at læse fra en motor, kommer tilbage med værdien af feltet.
     long readFunction(unsigned char address, int tableAdress, int dataLength);
-
-    int RTS_Pin;
-    int baudrate;
 };
 
 #endif

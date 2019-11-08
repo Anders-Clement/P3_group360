@@ -1,8 +1,8 @@
 #include "Protocol_2.h"
 #include "Arduino.h"
 
-ProtocolController::ProtocolController(int _pin, int _baudrate) : RTS_Pin(_pin), baudrate(_baudrate){
-  Serial1.begin(baudrate);
+ProtocolController::ProtocolController(){
+  Serial1.begin(motorBaudrate);
   pinMode(RTS_Pin, OUTPUT);
   digitalWrite(RTS_Pin, LOW);
 }
@@ -235,6 +235,11 @@ void ProtocolController::setPosPGain(unsigned char address, int pGain)
 long ProtocolController::getPos(unsigned char address) {
   return readFunction(address, 132, 4);
 }
+
+long ProtocolController::getVel(unsigned char address){
+  return readFunction(address, 128, 4);
+}
+
 
 unsigned short ProtocolController::update_crc(unsigned short crc_accum, unsigned char *data_blk_ptr, unsigned short data_blk_size)
 {

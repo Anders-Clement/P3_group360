@@ -20,28 +20,30 @@ struct Vector3
   float y;
   float z;
 };
-
-void angleFunk(const std_msgs::Float64MultiArray &robotAngles_incomming)
+//gets the robots current angeles/velocities and puts into 2 arrays.
+void angleFunk(const std_msgs::Float64MultiArray &robotAngles_incomming) 
 {
   for (int i = 0; i < 5; i++)
   {
     int dataindex = i * 2;
     posRobot[i] = robotAngles_incomming.data[dataindex];
-    posRobot[i] = robotAngles_incomming.data[dataindex + 1];
+    velRobot[i] = robotAngles_incomming.data[dataindex + 1];
   }
 }
 
-void trajectoryFunk(const std_msgs::Float64MultiArray &trajectoryAngels_incomming)
+//gets the robots desired pos,vel,acc for diffrernt joints and puts into 3 different arrays. 
+void trajectoryFunk(const std_msgs::Float64MultiArray &trajectoryangles_incomming) 
 {
   for (int i; i < 5; i++)
   {
     int dataindex = i * 3;
-    posDesired[i] = trajectoryAngels_incomming.data[dataindex];
-    velDesired[i] = trajectoryAngels_incomming.data[dataindex + 1];
-    accDesired[i] = trajectoryAngels_incomming.data[dataindex + 2];
+    posDesired[i] = trajectoryangles_incomming.data[dataindex];
+    velDesired[i] = trajectoryangles_incomming.data[dataindex + 1];
+    accDesired[i] = trajectoryangles_incomming.data[dataindex + 2];
   }
 }
 
+// calculates error of desired - actual position
 Vector3 getErrorPos()
 {
   Vector3 posError;
@@ -51,6 +53,7 @@ Vector3 getErrorPos()
 
   return posError;
 }
+//calculates the same for velocities
 Vector3 getErrorVel()
 {
   Vector3 velError;
@@ -61,6 +64,7 @@ Vector3 getErrorVel()
   return velError;
 }
 
+//calculates the torque of the 3 differnt joints and puts it into a vector
 Vector3 calculateTorque(Vector3 posError, Vector3 velError)
 {
   Vector3 tau;
@@ -100,9 +104,9 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "talker");
   ros::NodeHandle n;
 
-  ros::Publisher torque_pub = n.advertise<std_msgs::Float64MultiArray>("/crustcrawler/setTorques", 1);
-  ros::Subscriber angleGetter_sub = n.subscribe("crustcravler/getAngleVel", 1, angleFunk);
-  ros::Subscriber desiredAngle_sub = n.subscribe("crustcravler/trajectory", 1, trajectoryFunk);
+  ros::Publisher torque_pub = n.advertise<std_msgs::Float64MultiArray>("/crustcrawler/setTorques", 1); //publishes torque
+  ros::Subscriber angleGetter_sub = n.subscribe("crustcravler/getAngleVel", 1, angleFunk); //gets curent angles
+  ros::Subscriber desiredAngle_sub = n.subscribe("crustcravler/trajectory", 1, trajectoryFunk); //get desired angles
 
   ros::Rate loop_rate(30);
   int count = 0;
