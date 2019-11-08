@@ -66,14 +66,16 @@ void masterIntelligence::myo_raw_gest_str_callback(const std_msgs::String::Const
       break;
     }
   }
-    if (gesture == 6){
-      if (mode == 4)
-        mode = 1;
-      else
-        mode += 1;
-      ROS_INFO_STREAM(mode);
+  if (gesture == 6){
+    if (mode == 4)
+      mode = 1;
+    else{
+      mode += 1;
+      first_oldangles = true;
     }
+    ROS_INFO_STREAM(mode);
   }
+}
 
 //Calculates the trajectory and publishes
 void masterIntelligence::calc_traj(){
@@ -221,58 +223,85 @@ Vector3 masterIntelligence::inv_kin_closest(Vector3 pos, Vector3 angles){
 }
 
 void masterIntelligence::checkMyo(){
-    if (gesture != 0 && gesture != 6){
-      switch (mode){
-        case 1:
-          switch (gesture){
-            case 1: break;
-            case 2: pos[1] += move_pose; break;
-            case 3: pos[1] -= move_pose; break;
-            case 4: pos[0] += move_pose; break;
-            case 5: pos[0] -= move_pose; break;
-          }
-        break;
-        case 2:
-          switch (gesture){
-            case 1: break;
-            case 2: pos[3] += move_pose; break;
-            case 3: pos[3] -= move_pose; break;
-            case 4: pos[2] += move_pose; break;
-            case 5: pos[2] -= move_pose; break;
-          }
-        break;
-        case 3:
-          if (ros::Time::now().sec - gen_time.sec >= 1.0){
-            gen_time = ros::Time::now();
-            switch (gesture){
-              case 1: break;
-              case 2:
-                float goalang[4] = {0, 0, 0, 0};
-                float goalvel[4] = {0, 0, 0, 0};
-                for (size_t i = 0; i < 4; i++){
-                  float tf = 1;
-                  a0[i] = theta[i];
-                  a1[i] = thetadot[i];
-                  a2[i] = 3 / (pow(tf, 2)) * (goalang[i] - theta[i]) - 2 / tf * thetadot[i] - 1 / tf * goalvel[i];
-                  a3[i] = -2 / (pow(tf, 3)) * (goalang[i] - theta[i]) + 1 / (pow(tf, 2)) * (goalvel[i] + thetadot[i]);
-                }
-              break;
-            }
-          }
-        break; 
-        case 4: 
-          pos[0] = -angles[0];
-          pos[1] = -angles[1];
-          switch (gesture){
-            case 1: break;
-            case 2: pos[3] += move_pose; break;
-            case 3: pos[3] -= move_pose; break;
-            case 4: pos[2] += move_pose; break;
-            case 5: pos[2] -= move_pose; break;
-          }
-        break;
+  if (gesture != 0 && gesture != 6){
+    switch (mode){
+      case 1:
+        switch (gesture){
+          case 1: break;
+          case 2: pos[1] += move_pose; break;
+          case 3: pos[1] -= move_pose; break;
+          case 4: pos[0] += move_pose; break;
+          case 5: pos[0] -= move_pose; break;
         }
+      break;
+      case 2:
+        switch (gesture){
+          case 1: break;
+          case 2: pos[3] += move_pose; break;
+          case 3: pos[3] -= move_pose; break;
+          case 4: pos[2] += move_pose; break;
+          case 5: pos[2] -= move_pose; break;
+        }
+      break;
+      case 3:
+        if (ros::Time::now().sec - gen_time.sec >= 1.0){
+          gen_time = ros::Time::now();
+          switch (gesture){
+            case 1: break;
+            case 2:
+              float goalang[4] = {0, 0, 0, 0};
+              float goalvel[4] = {0, 0, 0, 0};
+              for (size_t i = 0; i < 4; i++){
+                float tf = 1;
+                a0[i] = theta[i];
+                a1[i] = thetadot[i];
+                a2[i] = 3 / (pow(tf, 2)) * (goalang[i] - theta[i]) - 2 / tf * thetadot[i] - 1 / tf * goalvel[i];
+                a3[i] = -2 / (pow(tf, 3)) * (goalang[i] - theta[i]) + 1 / (pow(tf, 2)) * (goalvel[i] + thetadot[i]);
+              }
+            break;
+          }
+        }
+      break; 
+      case 4: 
+        if (first_oldangles){
+          first_oldangles = false;
+          for (int i = 0; i<3; i++){
+            oldAngles[i] = angles[i];
+          }
+        }
+        pos[0] -= angles[0] - oldAngles[0];
+        pos[1] -= angles[1] - oldAngles[1];
+        switch (gesture){
+          case 1: break;
+          case 2: pos[3] += move_pose; break;
+          case 3: pos[3] -= move_pose; break;
+          case 4: pos[2] += move_pose; break;
+          case 5: pos[2] -= move_pose; break;
+        }
+        for (int i = 0; i<3; i++){
+           oldAngles[i] = angles[i];
+        }
+      break;
     }
+  }
+
+  if (pos[1] > 3.14)
+    pos[1] = 3.14;
+  else if (pos[1] < 0)
+    pos[1] = 0;
+  if (pos[2] < -3.14/2)
+    pos[2] = -3.14/2;
+  else if (pos[2] > 3.14/2)
+    pos[2] = 3.14/2;
+  if (pos[3] < -3.15/2)
+    pos[3] = -3.15/2;
+  else if (pos[3] > 0)
+    pos[3] = 0;
+  if (pos[4] < 0)
+    pos[4] = 0;
+  else if (pos[4] > 3.14/2)
+    pos[4] = 3.14/2;
+  
 
   // message declarations
   sensor_msgs::JointState joint_state;
@@ -299,11 +328,12 @@ void masterIntelligence::checkMyo(){
 int main(int argc, char **argv){
   ros::init(argc, argv, "master_node");
   masterIntelligence master_node;
+  ros::Rate loop_rate(30);
+
   while (ros::ok()){
     master_node.checkMyo();
-
     ros::spinOnce();
+    loop_rate.sleep();
   }
-
   return 0;
 }

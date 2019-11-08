@@ -31,12 +31,14 @@ public:
     float a2[4];
     float a3[4];
     float angles[3];
+    float oldAngles[3];
+    bool first_oldangles = true;
 
-    float pos[4];
+    float pos[4] = {0,0,0,0};
     bool firstRead = true;
 
-    int mode = 0;
-    float move_pose = 0.00002;
+    int mode = 3;
+    float move_pose = 0.02;
 
     void myo_raw_gest_str_callback(const std_msgs::String::ConstPtr& msg);
     void get_angle_vel_callback(const std_msgs::Float64MultiArray::ConstPtr& msg);
