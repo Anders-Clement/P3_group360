@@ -176,7 +176,7 @@ int main(int argc, char** argv) {
     joint_state.header.stamp = ros::Time::now();
     joint_state.name.resize(5);
     joint_state.position.resize(5);
-    joint_state.name[0] ="joint1";
+    joint_state.name[0] ="joinposRobot[0]";
     joint_state.position[0] = pos[0];
     joint_state.name[1] ="joint2";
     joint_state.position[1] = pos[1];

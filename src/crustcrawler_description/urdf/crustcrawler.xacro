@@ -91,7 +91,7 @@
     </inertial>
   </link>
 
-  <joint name="joint1" type="continuous">
+  <joint name="joinposRobot[0]" type="continuous">
     <axis xyz="0 0 1"/>
     <!--limit effort="1000.0" lower="${-M_pi}" upper="${M_pi}" velocity="0.5"/ -->
     <parent link="base"/>

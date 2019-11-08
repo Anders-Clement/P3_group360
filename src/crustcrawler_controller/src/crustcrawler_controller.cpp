@@ -70,10 +70,25 @@ Vector3 calculateTorque(Vector3 posError, Vector3 velError)
 
   float H11, H12, H13, H21, H22, H23, H31, H32, H33, VG1, VG2, VG3;
 
+  
+  H11 = 0.026 * cos(2.0 * posRobot[1] + posRobot[2]) - 0.17 * cos(2.0 * posRobot[1]) - 0.013 * sin(2.0 * posRobot[1]) + 0.026 * cos(posRobot[2]) + 0.044 * cos(2.0 * posRobot[1] + 2.0 * posRobot[2]) + 0.0016 * sin(2.0 * posRobot[1] + 2.0 * posRobot[2]) + 0.88;
+  H12 = 0.26 * cos(posRobot[1]) - 0.012 * sin(posRobot[1] + posRobot[2]) - 0.025 * cos(posRobot[1] + posRobot[2]) - 0.015 * sin(posRobot[1]);
+  H21 = H12;
+  H13 = -0.025 * cos(posRobot[1] + posRobot[2]) - 0.012 * sin(posRobot[1] + posRobot[2]);
+  H31 = H13;
+  H22 = 0.052 * cos(posRobot[2]) + 0.61;
+  H23 = 0.026 * cos(posRobot[2]);
+  H32 = H23;
+  H33 = 0.12;
+
+  VG1= -0.26*velRobot[1]^2*sin(posRobot[1]) - 0.012*velRobot[1]^2*cos(posRobot[1] + posRobot[2]) - 0.012*velRobot[2]^2*cos(posRobot[1] + posRobot[2]) + 0.025*velRobot[1]^2*sin(posRobot[1] + posRobot[2]) + 0.025*velRobot[2]^2*sin(posRobot[1] + posRobot[2]) - 0.015*velRobot[1]^2*cos(posRobot[1]) - 0.026*velRobot[0]*velRobot[2]*sin(posRobot[2]) + 3.1e-3*velRobot[0]*velRobot[1]*cos(2.0*posRobot[1] + 2.0*posRobot[2]) + 3.1e-3*velRobot[0]*velRobot[2]*cos(2.0*posRobot[1] + 2.0*posRobot[2]) - 0.088*velRobot[0]*velRobot[1]*sin(2.0*posRobot[1] + 2.0*posRobot[2]) - 0.088*velRobot[0]*velRobot[2]*sin(2.0*posRobot[1] + 2.0*posRobot[2]) - 0.052*velRobot[0]*velRobot[1]*sin(2.0*posRobot[1] + posRobot[2]) - 0.026*velRobot[0]*velRobot[2]*sin(2.0*posRobot[1] + posRobot[2]) - 0.025*velRobot[0]*velRobot[1]*cos(2.0*posRobot[1]) + 0.33*velRobot[0]*velRobot[1]*sin(2.0*posRobot[1]) - 0.024*velRobot[1]*velRobot[2]*cos(posRobot[1] + posRobot[2]) + 0.05*velRobot[1]*velRobot[2]*sin(posRobot[1] + posRobot[2])
+  VG2= -0.026*velRobot[2]^2*sin(posRobot[2]) + 0.013*velRobot[0]^2*cos(2.0*posRobot[1]) + 0.22*9.81*cos(posRobot[1]) - 0.17*velRobot[0]^2*sin(2.0*posRobot[1]) - 0.052*velRobot[1]*velRobot[2]*sin(posRobot[2]) - 1.6e-3*velRobot[0]^2*cos(2.0*posRobot[1])*cos(2.0*posRobot[2]) + 0.044*velRobot[0]^2*cos(2.0*posRobot[1])*sin(2.0*posRobot[2]) + 0.044*velRobot[0]^2*cos(2.0*posRobot[2])*sin(2.0*posRobot[1]) + 1.6e-3*velRobot[0]^2*sin(2.0*posRobot[1])*sin(2.0*posRobot[2])  + 0.12*9.81*cos(posRobot[1])*cos(posRobot[2]) + 0.026*velRobot[0]^2*cos(2.0*posRobot[1])*sin(posRobot[2]) + 0.026*velRobot[0]^2*sin(2.0*posRobot[1])*cos(posRobot[2]) - 0.12*9.81*sin(posRobot[1])*sin(posRobot[2]) 
+  VG3= 0.013*velRobot[0]^2*sin(posRobot[2]) + 0.026*velRobot[1]^2*sin(posRobot[2])  - 1.6e-3*velRobot[0]^2*cos(2.0*posRobot[1])*cos(2.0*posRobot[2])  + 0.044*velRobot[0]^2*cos(2.0*posRobot[1])*sin(2.0*posRobot[2]) + 0.044*velRobot[0]^2*cos(2.0*posRobot[2])*sin(2.0*posRobot[1]) + 1.6e-3*velRobot[0]^2*sin(2.0*posRobot[1])*sin(2.0*posRobot[2])  + 0.12*9.81*cos(posRobot[1])*cos(posRobot[2]) + 0.013*velRobot[0]^2*cos(2.0*posRobot[1])*sin(posRobot[2]) + 0.013*velRobot[0]^2*sin(2.0*posRobot[1])*cos(posRobot[2])  - 0.12*9.81*sin(posRobot[1])*sin(posRobot[2])
+
   tau.x = H12 * tmark.x + H12 * tmark.y + H13 * tmark.z + VG1;
   tau.y = H21 * tmark.x + H22 * tmark.y + H23 * tmark.z + VG2;
   tau.z = H31 * tmark.x + H32 * tmark.y + H33 * tmark.z + VG3;
-
+ 
   return tau;
 }
 
@@ -97,7 +112,6 @@ int main(int argc, char **argv)
     Vector3 velError = getErrorVel();
 
     calculateTorque(posError, velError);
-
 
     ros::spinOnce();
 

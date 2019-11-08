@@ -15,7 +15,7 @@ Panels:
     Expanded:
       - /2D Pose Estimate1
       - /2D Nav Goal1
-      - /Publish Point1
+      - /Publish PoinposRobot[0]
     Name: Tool Properties
     Splitter Ratio: 0.5886790156364441
   - Class: rviz/Views

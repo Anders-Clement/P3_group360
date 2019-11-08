@@ -57,7 +57,7 @@ public:
         ROS_INFO("CrustCrawler Plugin has started, and is ready for combat!");
         ROS_INFO_STREAM("The plugin is attach to model: " << _model->GetName());
 
-        joints[0] = _model->GetJoint("joint1");
+        joints[0] = _model->GetJoint("joinposRobot[0]");
         joints[1] = _model->GetJoint("joint2");
         joints[2] = _model->GetJoint("joint3");
         joints[3] = _model->GetJoint("joint4");
