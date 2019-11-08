@@ -11,8 +11,8 @@ _Float64 velRobot[5];
 _Float64 posDesired[5];
 _Float64 velDesired[5];
 _Float64 accDesired[5];
-float kp = 20;
-float kv = 0;
+float kp = 500.0;
+float kv = 0.1;
 
 struct Vector3
 {
@@ -34,7 +34,7 @@ void angleFunk(const std_msgs::Float64MultiArray &robotAngles_incomming)
 //gets the robots desired pos,vel,acc for diffrernt joints and puts into 3 different arrays. 
 void trajectoryFunk(const std_msgs::Float64MultiArray &trajectoryAngles_incomming) 
 {
-  for (int i; i < 5; i++)
+  for (int i = 0; i < 5; i++)
   {
     int dataindex = i * 3;
     posDesired[i] = trajectoryAngles_incomming.data[dataindex];
@@ -105,8 +105,8 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
 
   ros::Publisher torque_pub = n.advertise<std_msgs::Float64MultiArray>("/crustcrawler/setTorques", 1); //publishes torque
-  ros::Subscriber angleGetter_sub = n.subscribe("crustcravler/getAngleVel", 1, angleFunk); //gets curent angles
-  ros::Subscriber desiredAngle_sub = n.subscribe("crustcravler/trajectory", 1, trajectoryFunk); //get desired angles
+  ros::Subscriber angleGetter_sub = n.subscribe("/crustcrawler/getAngleVel", 1, angleFunk); //gets curent angles
+  ros::Subscriber desiredAngle_sub = n.subscribe("/crustcrawler/trajectory", 1, trajectoryFunk); //get desired angles
 
   ros::Rate loop_rate(30);
   int count = 0;
@@ -117,7 +117,16 @@ int main(int argc, char **argv)
     Vector3 posError = getErrorPos();
     Vector3 velError = getErrorVel();
 
-    calculateTorque(posError, velError);
+    Vector3 tau = calculateTorque(posError, velError);
+
+    std_msgs::Float64MultiArray msg;
+    msg.data.push_back(tau.x);
+    msg.data.push_back(tau.y);
+    msg.data.push_back(tau.z);
+    msg.data.push_back(0);
+    msg.data.push_back(0);
+
+    torque_pub.publish(msg);
 
     ros::spinOnce();
 
