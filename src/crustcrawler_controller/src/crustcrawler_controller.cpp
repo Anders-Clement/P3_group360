@@ -32,14 +32,14 @@ void angleFunk(const std_msgs::Float64MultiArray &robotAngles_incomming)
 }
 
 //gets the robots desired pos,vel,acc for diffrernt joints and puts into 3 different arrays. 
-void trajectoryFunk(const std_msgs::Float64MultiArray &trajectoryangles_incomming) 
+void trajectoryFunk(const std_msgs::Float64MultiArray &trajectoryAngles_incomming) 
 {
   for (int i; i < 5; i++)
   {
     int dataindex = i * 3;
-    posDesired[i] = trajectoryangles_incomming.data[dataindex];
-    velDesired[i] = trajectoryangles_incomming.data[dataindex + 1];
-    accDesired[i] = trajectoryangles_incomming.data[dataindex + 2];
+    posDesired[i] = trajectoryAngles_incomming.data[dataindex];
+    velDesired[i] = trajectoryAngles_incomming.data[dataindex + 1];
+    accDesired[i] = trajectoryAngles_incomming.data[dataindex + 2];
   }
 }
 
