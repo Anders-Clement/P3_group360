@@ -250,38 +250,7 @@ void masterIntelligence::checkMyo(){
           case 5: pos[2] -= move_pose; break;
         }
       break;
-      case 3:
-        
-        
-        if (ros::Time::now().sec - gen_time.sec >= 1.0){
-          gen_time = ros::Time::now();
-          float goalang[4] = {pos[0], pos[1], pos[2], pos[3]};
-          float goalvel[4] = {0, 0, 0, 0};
-          switch (gesture){
-            case 1: break;
-            case 2:
-              goalang[0] = 0;
-            break;
-          }
-          for (size_t i = 0; i < 4; i++){
-                float tf = 1.0;
-                a0[i] = theta[i];
-                a1[i] = thetadot[i];
-                a2[i] = 3 / (pow(tf, 2)) * (goalang[i] - theta[i]) - 2 / tf * thetadot[i] - 1 / tf * goalvel[i];
-                a3[i] = -2 / (pow(tf, 3)) * (goalang[i] - theta[i]) + 1 / (pow(tf, 2)) * (goalvel[i] + thetadot[i]);
-
-                // for testing in rviz
-                //a0[i] = pos[i];
-                //a1[i] = 0.0;
-                //a2[i] = 3.0 / (pow(tf, 2.0)) * (goalang[i] - pos[i]) - 2.0 / tf * 0.0 - 1.0 / tf * goalvel[i];
-                //a3[i] = -2.0 / (pow(tf, 3.0)) * (goalang[i] - pos[i]) + 1.0 / (pow(tf, 2.0)) * (goalvel[i] + 0.0);
-              }
-              ROS_INFO_STREAM(a0[0]);
-              ROS_INFO("GENERATING POS");
-        }
-        calc_traj();
-      break; 
-      case 4: 
+      case 3: 
         if (first_oldangles){
           first_oldangles = false;
           for (int i = 0; i<3; i++){
@@ -299,6 +268,89 @@ void masterIntelligence::checkMyo(){
         }
         for (int i = 0; i<3; i++){
            oldAngles[i] = angles[i];
+        }
+      break;
+      case 4:
+        if (ros::Time::now().nsec - gen_time.nsec >= 1000000000.0){
+          gen_time = ros::Time::now();
+          float goalang[4] = {pos[0], pos[1], pos[2], pos[3]};
+          float goalvel[4] = {0, 0, 0, 0};
+          switch (gesture){
+            case 1: break;
+            case 2:
+              goalang[0] = 0;
+            break;
+            case 3:
+              for (size_t i = 0; i < 4; i++){
+                goalang[i] = macro[3][i];
+              }
+            case 4:
+              for (size_t i = 0; i < 4; i++){
+                goalang[i] = macro[4][i];
+              }
+            break;
+            case 5:
+              for (size_t i = 0; i < 4; i++){
+                goalang[i] = macro[5][i];
+              }
+            break;        
+              
+          }
+          for (size_t i = 0; i < 4; i++){
+                float tf = 1.0;
+                a0[i] = theta[i];
+                a1[i] = thetadot[i];
+                a2[i] = 3 / (pow(tf, 2)) * (goalang[i] - theta[i]) - 2 / tf * thetadot[i] - 1 / tf * goalvel[i];
+                a3[i] = -2 / (pow(tf, 3)) * (goalang[i] - theta[i]) + 1 / (pow(tf, 2)) * (goalvel[i] + thetadot[i]);
+
+                // for testing in rviz
+                //a0[i] = pos[i];
+                //a1[i] = 0.0;
+                //a2[i] = 3.0 / (pow(tf, 2.0)) * (goalang[i] - pos[i]) - 2.0 / tf * 0.0 - 1.0 / tf * goalvel[i];
+                //a3[i] = -2.0 / (pow(tf, 3.0)) * (goalang[i] - pos[i]) + 1.0 / (pow(tf, 2.0)) * (goalvel[i] + 0.0);
+              }
+              //ROS_INFO_STREAM(a0[0]);
+              //ROS_INFO("GENERATING POS");
+        }
+        calc_traj();
+      break; 
+      case 5:
+        switch(gesture){
+          case 1: break;
+          case 2: break;
+          case 3:
+            count_time = ros::Time::now();
+            while (gesture == 3){
+              if(ros::Time::now().nsec - count_time.nsec >= 1000000000.0){
+                for (size_t i = 0; i < 4; i++){
+                  macro[3][i] = theta[i];
+                }
+                break;
+              }
+            }
+          break;
+          case 4:
+            count_time = ros::Time::now();
+            while (gesture == 4){
+              if(ros::Time::now().nsec - count_time.nsec >= 1000000000.0){
+                for (size_t i = 0; i < 4; i++){
+                  macro[4][i] = theta[i];
+                }
+                break;
+              }
+            }
+          break;
+          case 5:
+            count_time = ros::Time::now();
+            while (gesture == 5){
+              if(ros::Time::now().nsec - count_time.nsec >= 1000000000.0){
+                for (size_t i = 0; i < 4; i++){
+                  macro[5][i] = theta[i];
+                }
+                break;
+              }
+            }
+          break;
         }
       break;
     }

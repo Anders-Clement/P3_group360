@@ -8,6 +8,6 @@
 
   <node pkg="ros_myo" name="myo_raw" type="myo-rawNode.py" args="$(arg port)" output="screen"/>
 
-  <node pkg="crustcrawler" name="master" type="master.cpp"/>
+  <node pkg="crustcrawler" name="master" type="master"/>
 
 </launch>
