@@ -11,8 +11,9 @@ _Float64 velRobot[5];
 _Float64 posDesired[5];
 _Float64 velDesired[5];
 _Float64 accDesired[5];
-float kp = 500.0;
-float kv = 0.1;
+
+float kp[3] = {200, 200, 200};
+float kp[3] = {0, 0 , 0};
 
 struct Vector3
 {
@@ -70,9 +71,9 @@ Vector3 calculateTorque(Vector3 posError, Vector3 velError)
   Vector3 tau;
   Vector3 tmark;
 
-  tmark.x = kp * posError.x + kv * velError.x + accDesired[0];
-  tmark.y = kp * posError.y + kv * velError.y + accDesired[1];
-  tmark.z = kp * posError.z + kv * velError.z + accDesired[2];
+  tmark.x = kp[0] * posError.x + kv[0] * velError.x + accDesired[0];
+  tmark.y = kp[1] * posError.y + kv[1] * velError.y + accDesired[1];
+  tmark.z = kp[2] * posError.z + kv[2] * velError.z + accDesired[2];
 
   float H11, H12, H13, H21, H22, H23, H31, H32, H33, VG1, VG2, VG3;
 
