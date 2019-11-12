@@ -12,8 +12,8 @@ _Float64 posDesired[5];
 _Float64 velDesired[5];
 _Float64 accDesired[5];
 
-float kp[3] = {200, 200, 200};
-float kp[3] = {0, 0 , 0};
+float kp[3]= {200, 200, 200};
+float kv[3] = {0, 0, 0};
 
 struct Vector3
 {
