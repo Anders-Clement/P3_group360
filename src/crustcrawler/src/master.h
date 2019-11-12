@@ -37,7 +37,7 @@ public:
     float pos[4] = {0,0,0,0};
     bool firstRead = true;
 
-    int mode = 3;
+    int mode = 0;
     float move_pose = 0.02;
 
     void myo_raw_gest_str_callback(const std_msgs::String::ConstPtr& msg);
@@ -45,10 +45,10 @@ public:
     void myo_raw_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& msg);
 
     void checkMyo();
+    void calc_traj();
 
 private:
 
-    void calc_traj();
     Vector3 inv_kin_closest(Vector3 pos, Vector3 angles);
     void check_for_zero(Vector3 &input);
     Vector3 f_kin(Vector3 thetas);

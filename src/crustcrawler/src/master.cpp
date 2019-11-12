@@ -79,14 +79,22 @@ void masterIntelligence::myo_raw_gest_str_callback(const std_msgs::String::Const
 
 //Calculates the trajectory and publishes
 void masterIntelligence::calc_traj(){
-  float t = ros::Time::now().sec - gen_time.sec;
+  float t = ros::Time::now().nsec - gen_time.nsec;
+  t = t/1000000000.0;
   std_msgs::Float64MultiArray trajectories;
+  ROS_INFO("TRAJ");
+  ROS_INFO_STREAM("time 0: " << t);
+  ROS_INFO_STREAM("Pos 0: " << pos[0]);
   for (int i = 0; i < 4; i++){
     trajectories.data.push_back(a0[i] + a1[i] * t + a2[i] * pow(t, 2) + a3[i] * pow(t, 3));
     trajectories.data.push_back(a1[i] + 2 * a2[i] * t + 3 * a3[i] * pow(t, 2));
     trajectories.data.push_back(2 * a2[i] + 6 * a3[i] * t);
+
+    // for testing in rviz
+    // pos[i] = a0[i] + a1[i] * t + a2[i] * pow(t, 2.0) + a3[i] * pow(t, 3.0);
   }
-  trajectory_pub.publish(trajectories);
+  ROS_INFO_STREAM("Pos 0: " << pos[0]);
+  //trajectory_pub.publish(trajectories);
 }
 
 //Takes the current joint angles and velocities
@@ -98,7 +106,6 @@ void masterIntelligence::get_angle_vel_callback(const std_msgs::Float64MultiArra
     thetadot[j] = data[i + 1];
     j++;
   }
-  calc_traj();
 
   if (firstRead){
     firstRead = false;
@@ -244,23 +251,35 @@ void masterIntelligence::checkMyo(){
         }
       break;
       case 3:
+        
+        
         if (ros::Time::now().sec - gen_time.sec >= 1.0){
           gen_time = ros::Time::now();
+          float goalang[4] = {pos[0], pos[1], pos[2], pos[3]};
+          float goalvel[4] = {0, 0, 0, 0};
           switch (gesture){
             case 1: break;
             case 2:
-              float goalang[4] = {0, 0, 0, 0};
-              float goalvel[4] = {0, 0, 0, 0};
-              for (size_t i = 0; i < 4; i++){
-                float tf = 1;
+              goalang[0] = 0;
+            break;
+          }
+          for (size_t i = 0; i < 4; i++){
+                float tf = 1.0;
                 a0[i] = theta[i];
                 a1[i] = thetadot[i];
                 a2[i] = 3 / (pow(tf, 2)) * (goalang[i] - theta[i]) - 2 / tf * thetadot[i] - 1 / tf * goalvel[i];
                 a3[i] = -2 / (pow(tf, 3)) * (goalang[i] - theta[i]) + 1 / (pow(tf, 2)) * (goalvel[i] + thetadot[i]);
+
+                // for testing in rviz
+                //a0[i] = pos[i];
+                //a1[i] = 0.0;
+                //a2[i] = 3.0 / (pow(tf, 2.0)) * (goalang[i] - pos[i]) - 2.0 / tf * 0.0 - 1.0 / tf * goalvel[i];
+                //a3[i] = -2.0 / (pow(tf, 3.0)) * (goalang[i] - pos[i]) + 1.0 / (pow(tf, 2.0)) * (goalvel[i] + 0.0);
               }
-            break;
-          }
+              ROS_INFO_STREAM(a0[0]);
+              ROS_INFO("GENERATING POS");
         }
+        calc_traj();
       break; 
       case 4: 
         if (first_oldangles){
@@ -332,6 +351,7 @@ int main(int argc, char **argv){
 
   while (ros::ok()){
     master_node.checkMyo();
+    
     ros::spinOnce();
     loop_rate.sleep();
   }
