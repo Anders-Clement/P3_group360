@@ -19,22 +19,23 @@ float z;
 
 using namespace std;
 
+
 class masterIntelligence {
 public:
     masterIntelligence();
+    // intialising the virables that will be used
     int gesture = 0;
     float theta[5];
     float thetadot[5];
     ros::Time gen_time;
     ros::Time count_time;
-    float a0[4];
-    float a1[4];
-    float a2[4];
-    float a3[4];
+    float a[4][4];
     float angles[3];
     float oldAngles[3];
     bool first_oldangles = true;
-    float macro[4][4];
+    float macro[4][4] = {2};
+    float goalang[4];
+    float goalvel[4];
 
     float pos[4] = {0,0,0,0};
     bool firstRead = true;
@@ -42,6 +43,7 @@ public:
     int mode = 0;
     float move_pose = 0.02;
 
+    // constucting functions
     void myo_raw_gest_str_callback(const std_msgs::String::ConstPtr& msg);
     void get_angle_vel_callback(const std_msgs::Float64MultiArray::ConstPtr& msg);
     void myo_raw_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& msg);
