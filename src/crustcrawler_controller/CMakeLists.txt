@@ -10,6 +10,7 @@ project(crustcrawler_controller)
 find_package(catkin REQUIRED COMPONENTS
   gazebo_ros
   roscpp
+  rospy
 )
 
 ## System dependencies are found with CMake's conventions
@@ -157,10 +158,10 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-# install(PROGRAMS
-#   scripts/my_python_script
-#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+ install(PROGRAMS
+   scripts/plotter.py
+   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+ )
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/formaposRobot[0]/building_executables.html
