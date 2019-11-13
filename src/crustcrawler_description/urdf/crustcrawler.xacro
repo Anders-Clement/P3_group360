@@ -19,15 +19,15 @@
   <xacro:property name="Lp" value="0.0" />
 
 
-  <xacro:property name="Lc" value="0.05875" />
+  <xacro:property name="Lc" value="0.02895" />
   <xacro:property name="Lc2" value="0.17433" />
   <xacro:property name="Lc3" value="0.12078" />
   <xacro:property name="d3" value="-0.003" />
 
 
-  <xacro:property name="m1" value="0.22501148645" />
-  <xacro:property name="m2" value="0.21285774246" />
-  <xacro:property name="m3" value="0.28725035108" />
+  <xacro:property name="m1" value="0.1874" />
+  <xacro:property name="m2" value="0.17226" />
+  <xacro:property name="m3" value="0.18391" />
   <xacro:property name="mp" value="0.0" />
 
 
