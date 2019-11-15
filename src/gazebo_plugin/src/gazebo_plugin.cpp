@@ -85,10 +85,10 @@ public:
             for (int i = 0; i < 5; i++)
             {
                 int dataIndex = (i * 2);
-                double currentErrorPose = joints[i]->Position(2);
+                double currentPose = joints[i]->Position(2);
                 msg.data[dataIndex] = currentErrorPose;
-                msg.data[dataIndex + 1] = jointsLastAngle[i] - currentErrorPose;
-                jointsLastAngle[i] = currentErrorPose;
+                msg.data[dataIndex + 1] = (jointsLastAngle[i] - currentPose)/(1.0/30.0);
+                jointsLastAngle[i] = currentPose;
             }
             anglePublisher.publish(msg);
         }

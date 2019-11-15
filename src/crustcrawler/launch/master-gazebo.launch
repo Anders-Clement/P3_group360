@@ -6,9 +6,10 @@
   <include file="$(find crustcrawler_gazebo)/launch/crustcrawler.launch">
   </include>
 
-  
+
   <node pkg="ros_myo" name="myo_raw" type="myo-rawNode.py" args="$(arg port)" output="screen"/>
 
-  <node pkg="crustcrawler" name="crustcrawler_node" type="master"/>
+  <node pkg="crustcrawler" name="master" type="master"/>
+
 
 </launch>
