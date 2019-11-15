@@ -339,7 +339,7 @@ void masterIntelligence::checkMyo(){
               break;   
             }
           }
-          for (size_t i = 0; i < 4; i++){ // calculates the a coefficients using goal ang and vel
+          for (size_t i = 0; i < 4; i++){ // calculates the 'a' coefficients using goal ang and vel
             float tf = 1.0;
             
             a[0][i] = theta[i];
@@ -354,6 +354,7 @@ void masterIntelligence::checkMyo(){
             a[3][i] = -2.0 / (pow(tf, 3.0)) * (goalang[i] - pos[i]) + 1.0 / (pow(tf, 2.0)) * (goalvel[i] + 0.0);
             */
           }
+          // calculates the theta, thetadot and thetadotdot for all joints
           float t = ros::Time::now().toSec() - gen_time.toSec();
           for (int i = 0; i < 4; i++){
             pos[i] = a[0][i] + a[1][i] * t + a[2][i] * pow(t, 2.0) + a[3][i] * pow(t, 3.0);
@@ -366,22 +367,23 @@ void masterIntelligence::checkMyo(){
       
       // mode 5 can controls the first two joints using the IMU from the Myo and then the four gestures to control the 3rd joint and the gripper
       case 5:{
-        if (modeChanged){ 
+        if (modeChanged){ // if first time since mode change
           modeChanged = false;
-          for (int i = 0; i<3; i++){
+          for (int i = 0; i<3; i++){ // set roll pitch yaw to current position
             old_eulerAng[i] = eulerAng[i];
           }
-        }
+        } 
+        // tracks the difference from current IMU position to previous
         pos[0] -= eulerAng[0] - old_eulerAng[0];
         pos[1] -= eulerAng[1] - old_eulerAng[1];
-        switch (gesture){
+        switch (gesture){ 
           case 1:{ break;}
           case 2:{ pos[3] += move_pose; break;}
           case 3:{ pos[3] -= move_pose; break;}
           case 4:{ pos[2] += move_pose; break;}
           case 5:{ pos[2] -= move_pose; break;}
         }
-        //old angles is used for setting the current joint angles when switching to this mode as start point so it only is controlled by the movement and not the direction
+        // sets new eulerAng to old eulerAng
         for (int i = 0; i<3; i++){
            old_eulerAng[i] = eulerAng[i];
         }
