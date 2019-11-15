@@ -79,19 +79,10 @@ void masterIntelligence::get_angle_vel_callback(const std_msgs::Float64MultiArra
   // takes the current pos and vel and divides them into 2 different vectors
   int j = 0;
   for (int i = 0; i < 10; i += 2){
-    theta[j] = data[i];
-    thetadot[j] = data[i + 1];
+    pos[j] = data[i];
+    vel[j] = data[i + 1];
     j++;
   }
-  /*
-  // for testing in rviz
-  if (firstRead){
-    firstRead = false;
-    for (int i = 0; i < 4; i++){
-     pos[i] = theta[i];
-    }
-  }
-  */
 }
 
 
@@ -210,7 +201,6 @@ Vector3 masterIntelligence::inv_kin_closest(Vector3 pos, Vector3 angles){
 */
 
 void masterIntelligence::checkMyo(){
-
   if (gesture != 0 && gesture != 6){ // checking that gesture is not unknown or pinky_to_thumb because pinky to thumb changes modes
     switch (mode){ // then check what mode it is in
       case 1:{ // mode 1 controlls the first two joints with the four remaining gestures that is not rest
@@ -243,10 +233,10 @@ void masterIntelligence::checkMyo(){
             while (gesture == 2){ // enters a while loop to be able check if the gesture is held
               if(ros::Time::now().toSec() - count_time.toSec() >= 2.0){ // if the gesture is held for 2 sec 
                 for (size_t i = 0; i < 4; i++){ // set the macro to the current position for all joints
-                  macro[0][i] = theta[i];
-                 // macro[0][i] = 0.0;
+                  //macro[0][i] = pos[i];
+                  macro[0][i] = 0.0;
                 }
-                ROS_INFO_STREAM("macro 0 set:"); // 
+                //ROS_INFO_STREAM("macro 0 set:"); // 
                 break;
               }
               ros::spinOnce();
@@ -258,8 +248,7 @@ void masterIntelligence::checkMyo(){
             while (gesture == 3){
               if(ros::Time::now().toSec() - count_time.toSec() >= 2.0){
                 for (size_t i = 0; i < 4; i++){
-                  macro[1][i] = theta[i];
-                  //macro[1][i] = pos[i];
+                  macro[1][i] = pos[i];
                 }
                 ROS_INFO_STREAM("macro 1 set:");
                 break;
@@ -273,8 +262,7 @@ void masterIntelligence::checkMyo(){
             while (gesture == 4){
               if(ros::Time::now().toSec() - count_time.toSec() >= 2.0){
                 for (size_t i = 0; i < 4; i++){
-                  macro[2][i] = theta[i];
-                  //macro[2][i] = pos[i];
+                  macro[2][i] = pos[i];
                 }
                 ROS_INFO_STREAM("macro 2 set:");
                 break;
@@ -288,8 +276,7 @@ void masterIntelligence::checkMyo(){
             while (gesture == 5){
               if(ros::Time::now().toSec() - count_time.toSec() >= 2.0){
                 for (size_t i = 0; i < 4; i++){
-                  macro[3][i] = theta[i];
-                  //macro[3][i] = pos[i];
+                  macro[3][i] = pos[i];
                 }
                 ROS_INFO_STREAM("macro 3 set:");
                 break;
@@ -303,14 +290,11 @@ void masterIntelligence::checkMyo(){
       }
       // mode 4 can recall saved macros by using the gesture is have been saved under
       case 4:{ 
-        if (ros::Time::now().toSec() - gen_time.toSec() >= 1.0){ // to ensure this mode only updates once per second we check the timer
+        if (ros::Time::now().toSec() - gen_time.toSec() >= tf){ // to ensure this mode only updates once per tf we check the timer
           gen_time = ros::Time::now(); // resets timer
           for (size_t i = 0; i < 4; i++){ // sets the goal position to current position
-            goalang[i] = theta[i];
-            goalvel[i] = 0;
-
-              //for testing in rviz
-            //goalang[i] = pos[i];
+            goalang[i] = pos[i];
+            goalvel[i] = 0.0;
           }
           switch (gesture){
             case 1:{ break;}
@@ -339,21 +323,17 @@ void masterIntelligence::checkMyo(){
               break;   
             }
           }
-          for (size_t i = 0; i < 4; i++){ // calculates the 'a' coefficients using goal ang and vel
-            float tf = 1.0;
-            
-            a[0][i] = theta[i];
-            a[1][i] = 0.0;
-            a[2][i] = 3.0 / (pow(tf, 2.0)) * (goalang[i] - theta[i]) - 2.0 / tf * thetadot[i] - 1.0 / tf * goalvel[i];
-            a[3][i] = -2.0 / (pow(tf, 3.0)) * (goalang[i] - theta[i]) + 1.0 / (pow(tf, 2.0)) * (goalvel[i] + thetadot[i]);
-            /*
-            // for testing in rviz
-            a[0][i] = pos[i];
-            a[1][i] = 0.0;
-            a[2][i] = 3.0 / (pow(tf, 2.0)) * (goalang[i] - pos[i]) - 2.0 / tf * 0.0 - 1.0 / tf * goalvel[i];
-            a[3][i] = -2.0 / (pow(tf, 3.0)) * (goalang[i] - pos[i]) + 1.0 / (pow(tf, 2.0)) * (goalvel[i] + 0.0);
-            */
+          ROS_INFO_STREAM("goalang[0]: " << goalang[0]);
+          ROS_INFO_STREAM("pos[0]: " << pos[0]);
+          for (size_t i = 0; i < 4; i++){ // calculates the 'a' coefficients using goal ang and vel   
+              a[0][i] = pos[i];
+              a[1][i] = 0.0;
+              a[2][i] = 3.0 / (pow(tf, 2.0)) * (goalang[i] - pos[i]) - 2.0 / tf * 0.0 - 1.0 / tf * 0.0;
+              a[3][i] = -2.0 / (pow(tf, 3.0)) * (goalang[i] - pos[i]) + 1.0 / (pow(tf, 2.0)) * (0.0 + 0.0);
+
           }
+
+        }
           // calculates the theta, thetadot and thetadotdot for all joints
           float t = ros::Time::now().toSec() - gen_time.toSec();
           for (int i = 0; i < 4; i++){
@@ -361,7 +341,6 @@ void masterIntelligence::checkMyo(){
             vel[i] = a[1][i] + 2.0 * a[2][i] * t + 3.0 * a[3][i] * pow(t, 2.0);
             ang[i] = 2.0 * a[2][i] + 6.0 * a[3][i] * t;
           }
-        }
         break;
       }
       
@@ -407,18 +386,6 @@ void masterIntelligence::checkMyo(){
   else if (pos[3] > 0)
     pos[3] = 0;
   
-  // message declarations
-  std_msgs::Float64MultiArray trajectories;
-
-  // update trajectories
-  for (size_t i = 0; i < 4; i++)
-  {
-    trajectories.data.push_back(pos[i]);
-    trajectories.data.push_back(vel[i]);
-    trajectories.data.push_back(ang[i]);
-  }
-  // publish trajectories
-  trajectory_pub.publish(trajectories);
 
   // message declarations
   sensor_msgs::JointState joint_state;
@@ -441,7 +408,19 @@ void masterIntelligence::checkMyo(){
   //send the joint state and transform
   joint_pub.publish(joint_state);
 
-  
+    // message declarations
+  std_msgs::Float64MultiArray trajectories;
+
+    // update trajectories
+  for (size_t i = 0; i < 4; i++)
+  {
+    trajectories.data.push_back(pos[i]);
+    trajectories.data.push_back(vel[i]);
+    trajectories.data.push_back(ang[i]);
+  }
+  // publish trajectories
+  trajectory_pub.publish(trajectories);
+
 }
 
 

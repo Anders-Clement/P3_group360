@@ -25,8 +25,6 @@ public:
     masterIntelligence();
     // intialising the virables that will be used
     int gesture = 0;
-    float theta[5];
-    float thetadot[5];
     ros::Time gen_time;
     ros::Time count_time;
     float a[4][4] = {0};
@@ -36,13 +34,11 @@ public:
     float macro[4][4] = {0};
     float goalang[4];
     float goalvel[4];
+    float tf = 2.0;
 
     float pos[4] = {0};
     float vel[4] = {0};
     float ang[4] = {0};
-
-
-    bool firstRead = true;
 
     int mode = 0;
     float move_pose = 0.02;
@@ -53,7 +49,6 @@ public:
     void myo_raw_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& msg);
 
     void checkMyo();
-    void calc_traj();
 
 private:
 
