@@ -12,7 +12,7 @@ _Float64 posDesired[5];
 _Float64 velDesired[5];
 _Float64 accDesired[5];
 
-float kp[3] = {500.0, 500.0, 500.0};
+float kp[3] = {1.0, 1.0, 1.0};
 float kv[3] = {0.0, 0.0, 0.0};
 float ki[3] = {0.0, 0.0, 0.0};
 float errorSum[3] = {0.0, 0.0, 0.0};
