@@ -86,7 +86,7 @@ public:
             {
                 int dataIndex = (i * 2);
                 double currentPose = joints[i]->Position(2);
-                msg.data[dataIndex] = currentErrorPose;
+                msg.data[dataIndex] = currentPose;
                 msg.data[dataIndex + 1] = (jointsLastAngle[i] - currentPose)/(1.0/30.0);
                 jointsLastAngle[i] = currentPose;
             }
