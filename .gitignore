@@ -3,4 +3,6 @@ build/*
 run.sh
 .vscode/c_cpp_properties.json
 .vscode/settings.json
+.vscode/task.json
 .vscode/launch.json
+.gitignore
