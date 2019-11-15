@@ -91,8 +91,8 @@ public:
                 jointsLastAngle[i] = currentErrorPose;
             }
             anglePublisher.publish(msg);
-            ros::spinOnce();
         }
+        ros::spinOnce();
     }
 
     void torqueUpdater(const std_msgs::Float64MultiArray &incoming)
