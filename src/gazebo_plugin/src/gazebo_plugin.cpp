@@ -23,6 +23,7 @@ class CrustCrawlerPlugin : public ModelPlugin
     ros::Time prevRun;
     physics::ModelPtr crustyModel;
     double jointsLastAngle[5] = {0, 0, 0, 0, 0};
+    double forceTorques[5] = {0,0,0,0,0};
 
 public:
     CrustCrawlerPlugin() : ModelPlugin()
@@ -93,13 +94,18 @@ public:
             anglePublisher.publish(msg);
         }
         ros::spinOnce();
+
+        for (int i = 0; i < 5; i++)
+        {
+            joints[i]->SetForce(0, forceTorques[i]);
+        }
     }
 
     void torqueUpdater(const std_msgs::Float64MultiArray &incoming)
     {
         for (int i = 0; i < 5; i++)
         {
-            joints[i]->SetForce(0, incoming.data[i]);
+            forceTorques[i] = incoming.data[i];
         }
     }
 };
