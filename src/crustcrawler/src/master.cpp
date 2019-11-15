@@ -12,13 +12,6 @@ masterIntelligence::masterIntelligence(){
   pose_sub = n.subscribe("/myo_raw/pose", 10, &masterIntelligence::myo_raw_pose_callback, this);
 
   ros::spinOnce();
-
-  gen_time = ros::Time::now();
-  for (size_t i = 0; i < 4; i++) {
-    for (size_t j = 0; j < 4; j++){
-      a[i][j] = 0;
-    }
-  }
 }
 
 // Takes the quaternions from the imu and calculates the euler angles (roll, pitch and yaw)
@@ -80,15 +73,14 @@ void masterIntelligence::calc_traj(){
   float t = ros::Time::now().toSec() - gen_time.toSec();
   std_msgs::Float64MultiArray trajectories;
   for (int i = 0; i < 4; i++){
-    /*
-    trajectories.data.push_back(a[0][i] + a[1][i] * t + a[2][i] * pow(t, 2) + a[3][i] * pow(t, 3));
-    trajectories.data.push_back(a[1][i] + 2 * a[2][i] * t + 3 * a[3][i] * pow(t, 2));
-    trajectories.data.push_back(2 * a[2][i] + 6 * a[3][i] * t);
-    */
-    // for testing in rviz
+
     pos[i] = a[0][i] + a[1][i] * t + a[2][i] * pow(t, 2.0) + a[3][i] * pow(t, 3.0);
+
+    trajectories.data.push_back(pos[i]);
+    trajectories.data.push_back(a[1][i] + 2.0 * a[2][i] * t + 3.0 * a[3][i] * pow(t, 2.0));
+    trajectories.data.push_back(2.0 * a[2][i] + 6.0 * a[3][i] * t);
   }
-  //trajectory_pub.publish(trajectories);
+  trajectory_pub.publish(trajectories);
 }
 
 //Takes the current joint angles and velocities
@@ -109,7 +101,7 @@ void masterIntelligence::get_angle_vel_callback(const std_msgs::Float64MultiArra
   }
 }
 
-
+/*
 void masterIntelligence::check_for_zero(Vector3 &input){
   float zero_value = 0.0001;
   if (input.x == 0.0)
@@ -221,21 +213,24 @@ Vector3 masterIntelligence::inv_kin_closest(Vector3 pos, Vector3 angles){
 
   return solutions[lowest];
 }
+*/
 
 void masterIntelligence::checkMyo(){
-  if (gesture != 0 && gesture != 6){
-    switch (mode){
-      // mode 1 and 2 controlls 2 joints each with four gestures
-      case 1:
-        switch (gesture){
+
+  if (gesture != 0 && gesture != 6){ // checking that gesture is not unknown or pinky_to_thumb because pinky to thumb changes modes
+    switch (mode){ // then check what mode it is in
+      case 1:{ // mode 1 controlls the first two joints with the four remaining gestures that is not rest
+        switch (gesture){ 
           case 1:{ break;}
           case 2:{ pos[1] += move_pose; break;}
           case 3:{ pos[1] -= move_pose; break;}
           case 4:{ pos[0] += move_pose; break;}
           case 5:{ pos[0] -= move_pose; break;}
         }
-      break;
-      case 2:{
+        break;
+      }
+
+      case 2:{ // mode 2 controlls the third joint and the gripper with the four remaining gestures that is not rest
         switch (gesture){
           case 1:{ break;}
           case 2:{ pos[3] += move_pose; break;}
@@ -245,32 +240,32 @@ void masterIntelligence::checkMyo(){
         }
         break;
       }
-      // mode 3 is able to set a the current joint angles macro to a gesture by holding the gesture for 2 seconds
-      case 3:{
+
+      case 3:{ // mode 3 is able to set a the current joint angles macro to a gesture by holding the gesture for 2 seconds
         switch(gesture){
-          case 1:{ break;}
-          case 2:{
-            count_time = ros::Time::now();
-            while (gesture == 2){
-              if(ros::Time::now().toSec() - count_time.toSec() >= 2.0){
-                for (size_t i = 0; i < 4; i++){
-                 // macro[0][i] = theta[i];
-                  macro[0][i] = 0.0;
+          case 1:{ break;} // if gesture is rest break
+          case 2:{ 
+            count_time = ros::Time::now(); // resets counter timer
+            while (gesture == 2){ // enters a while loop to be able check if the gesture is held
+              if(ros::Time::now().toSec() - count_time.toSec() >= 2.0){ // if the gesture is held for 2 sec 
+                for (size_t i = 0; i < 4; i++){ // set the macro to the current position for all joints
+                  macro[0][i] = theta[i];
+                 // macro[0][i] = 0.0;
                 }
-                ROS_INFO_STREAM("macro 0 set:");
+                ROS_INFO_STREAM("macro 0 set:"); // 
                 break;
               }
               ros::spinOnce();
             }
             break;
           }
-          case 3:{
+          case 3:{ // same as case 2 just with gesture 3
             count_time = ros::Time::now();
             while (gesture == 3){
               if(ros::Time::now().toSec() - count_time.toSec() >= 2.0){
                 for (size_t i = 0; i < 4; i++){
-                 // macro[1][i] = theta[i];
-                  macro[1][i] = pos[i];
+                  macro[1][i] = theta[i];
+                  //macro[1][i] = pos[i];
                 }
                 ROS_INFO_STREAM("macro 1 set:");
                 break;
@@ -279,13 +274,13 @@ void masterIntelligence::checkMyo(){
             }
             break;
           }
-          case 4:{
+          case 4:{ // same as case 2 just with gesture 4
             count_time = ros::Time::now();
             while (gesture == 4){
               if(ros::Time::now().toSec() - count_time.toSec() >= 2.0){
                 for (size_t i = 0; i < 4; i++){
-                //  macro[2][i] = theta[i];
-                  macro[2][i] = pos[i];
+                  macro[2][i] = theta[i];
+                  //macro[2][i] = pos[i];
                 }
                 ROS_INFO_STREAM("macro 2 set:");
                 break;
@@ -294,13 +289,13 @@ void masterIntelligence::checkMyo(){
             }
             break;
           }
-          case 5:{
+          case 5:{ // same as case 2 just with gesture 5
             count_time = ros::Time::now();
             while (gesture == 5){
               if(ros::Time::now().toSec() - count_time.toSec() >= 2.0){
                 for (size_t i = 0; i < 4; i++){
-                //  macro[3][i] = theta[i];
-                  macro[3][i] = pos[i];
+                  macro[3][i] = theta[i];
+                  //macro[3][i] = pos[i];
                 }
                 ROS_INFO_STREAM("macro 3 set:");
                 break;
@@ -313,65 +308,65 @@ void masterIntelligence::checkMyo(){
         break;
       }
       // mode 4 can recall saved macros by using the gesture is have been saved under
-      case 4:{
-        uint32_t tmp23 = ros::Time::now().toSec() - gen_time.toSec();
-        if (ros::Time::now().toSec() - gen_time.toSec() >= 1.0){
-          gen_time = ros::Time::now();
-          for (size_t i = 0; i < 4; i++){
-            //goalang[i] = theta[i];
+      case 4:{ 
+        if (ros::Time::now().toSec() - gen_time.toSec() >= 1.0){ // to ensure this mode only updates once per second we check the timer
+          gen_time = ros::Time::now(); // resets timer
+          for (size_t i = 0; i < 4; i++){ // sets the goal position to current position
+            goalang[i] = theta[i];
             goalvel[i] = 0;
 
-            //for testing in rviz
-            goalang[i] = pos[i];
+              //for testing in rviz
+            //goalang[i] = pos[i];
           }
           switch (gesture){
             case 1:{ break;}
-            case 2:{
-              for (size_t i = 0; i < 4; i++){
+            case 2:{ // sets goal position to the corresponding macro
+              for (size_t i = 0; i < 4; i++){ 
                 goalang[i] = 0.0;
               }
               break;
             }
-            case 3:{
+            case 3:{ // sets goal position to the corresponding macro
               for (size_t i = 0; i < 4; i++){
                 goalang[i] = macro[1][i];
               }
               break;
             }
-            case 4:{
+            case 4:{ // sets goal position to the corresponding macro
               for (size_t i = 0; i < 4; i++){
                 goalang[i] = macro[2][i];
               }
               break;
             }
-            case 5:{
+            case 5:{ // sets goal position to the corresponding macro
               for (size_t i = 0; i < 4; i++){
                 goalang[i] = macro[3][i];
               }
               break;   
             }
           }
-          for (size_t i = 0; i < 4; i++){
+          for (size_t i = 0; i < 4; i++){ // calculates the a coefficients using goal ang and vel
                 float tf = 1.0;
-                /*
+                
                 a[0][i] = theta[i];
-                a[1][i] = thetadot[i];
-                a[2][i] = 3 / (pow(tf, 2)) * (goalang[i] - theta[i]) - 2 / tf * thetadot[i] - 1 / tf * goalvel[i];
-                a[3][i] = -2 / (pow(tf, 3)) * (goalang[i] - theta[i]) + 1 / (pow(tf, 2)) * (goalvel[i] + thetadot[i]);
-                */
+                a[1][i] = 0.0;
+                a[2][i] = 3.0 / (pow(tf, 2.0)) * (goalang[i] - theta[i]) - 2.0 / tf * thetadot[i] - 1.0 / tf * goalvel[i];
+                a[3][i] = -2.0 / (pow(tf, 3.0)) * (goalang[i] - theta[i]) + 1.0 / (pow(tf, 2.0)) * (goalvel[i] + thetadot[i]);
+                /*
                 // for testing in rviz
                 a[0][i] = pos[i];
                 a[1][i] = 0.0;
                 a[2][i] = 3.0 / (pow(tf, 2.0)) * (goalang[i] - pos[i]) - 2.0 / tf * 0.0 - 1.0 / tf * goalvel[i];
                 a[3][i] = -2.0 / (pow(tf, 3.0)) * (goalang[i] - pos[i]) + 1.0 / (pow(tf, 2.0)) * (goalvel[i] + 0.0);
+                */
               }
         }
-        calc_traj();
         break;
       }
-      // mode 5 can control the first two joints using the IMU from the Myo and then the four gestures to control the 3rd joint and the gripper
+      
+      // mode 5 can controls the first two joints using the IMU from the Myo and then the four gestures to control the 3rd joint and the gripper
       case 5:{
-        if (first_oldangles){
+        if (first_oldangles){ 
           first_oldangles = false;
           for (int i = 0; i<3; i++){
             oldAngles[i] = angles[i];
@@ -394,6 +389,8 @@ void masterIntelligence::checkMyo(){
       }
     }
   }
+
+
 // setting the joint limits
   if (pos[1] > 3.14)
     pos[1] = 3.14;
@@ -408,6 +405,9 @@ void masterIntelligence::checkMyo(){
   else if (pos[3] > 0)
     pos[3] = 0;
   
+
+
+  calc_traj();
 
   // message declarations
   sensor_msgs::JointState joint_state;
@@ -429,7 +429,11 @@ void masterIntelligence::checkMyo(){
 
   //send the joint state and transform
   joint_pub.publish(joint_state);
+
+  
 }
+
+
 // main where it all begins
 int main(int argc, char **argv){
   ros::init(argc, argv, "master_node");

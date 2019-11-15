@@ -29,11 +29,11 @@ public:
     float thetadot[5];
     ros::Time gen_time;
     ros::Time count_time;
-    float a[4][4];
+    float a[4][4] = {0};
     float angles[3];
     float oldAngles[3];
     bool first_oldangles = true;
-    float macro[4][4] = {2};
+    float macro[4][4] = {0};
     float goalang[4];
     float goalvel[4];
 
