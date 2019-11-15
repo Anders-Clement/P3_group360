@@ -30,14 +30,18 @@ public:
     ros::Time gen_time;
     ros::Time count_time;
     float a[4][4] = {0};
-    float angles[3];
-    float oldAngles[3];
-    bool first_oldangles = true;
+    float eulerAng[3];
+    float old_eulerAng[3];
+    bool modeChanged = true;
     float macro[4][4] = {0};
     float goalang[4];
     float goalvel[4];
 
-    float pos[4] = {0,0,0,0};
+    float pos[4] = {0};
+    float vel[4] = {0};
+    float ang[4] = {0};
+
+
     bool firstRead = true;
 
     int mode = 0;

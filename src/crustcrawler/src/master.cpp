@@ -40,16 +40,19 @@ void masterIntelligence::myo_raw_pose_callback(const geometry_msgs::PoseStamped:
   double cosy_cosp = 1 - 2 * (y * y + z * z);
   yaw = std::atan2(siny_cosp, cosy_cosp);
 
-  angles[0] = roll;
-  angles[1] = pitch;
-  angles[2] = yaw;
+  eulerAng[0] = roll;
+  eulerAng[1] = pitch;
+  eulerAng[2] = yaw;
 }
 
-//checks what gesture the myo detects
+//checks what gesture the myo detects and changes it from string to int representation
 void masterIntelligence::myo_raw_gest_str_callback(const std_msgs::String::ConstPtr &msg){
+
+  
   string data = msg->data;
   const string known_gestures[] = {"UNKNOWN", "REST", "FIST", "FINGERS_SPREAD", "WAVE_IN", "WAVE_OUT", "THUMB_TO_PINKY"};
 
+  // checks which gesture is currently held and gives it and int representation
   for (int i = 0; i < 7; i++){
     if (data == known_gestures[i]){
       gesture = i;
@@ -57,48 +60,38 @@ void masterIntelligence::myo_raw_gest_str_callback(const std_msgs::String::Const
       break;
     }
   }
+  // if the gesture held is "THUMB_TO_PINKY" then change mode from 1 to 5 and then reset to 1
   if (gesture == 6){
     if (mode == 5)
       mode = 1;
     else{
       mode += 1;
-      first_oldangles = true;
     }
+    modeChanged = true;
     ROS_INFO_STREAM(mode);
   }
-}
-
-//Calculates the trajectory and publishes
-void masterIntelligence::calc_traj(){
-  float t = ros::Time::now().toSec() - gen_time.toSec();
-  std_msgs::Float64MultiArray trajectories;
-  for (int i = 0; i < 4; i++){
-
-    pos[i] = a[0][i] + a[1][i] * t + a[2][i] * pow(t, 2.0) + a[3][i] * pow(t, 3.0);
-
-    trajectories.data.push_back(pos[i]);
-    trajectories.data.push_back(a[1][i] + 2.0 * a[2][i] * t + 3.0 * a[3][i] * pow(t, 2.0));
-    trajectories.data.push_back(2.0 * a[2][i] + 6.0 * a[3][i] * t);
-  }
-  trajectory_pub.publish(trajectories);
 }
 
 //Takes the current joint angles and velocities
 void masterIntelligence::get_angle_vel_callback(const std_msgs::Float64MultiArray::ConstPtr &msg){
   vector<double> data = msg->data;
+
+  // takes the current pos and vel and divides them into 2 different vectors
   int j = 0;
   for (int i = 0; i < 10; i += 2){
     theta[j] = data[i];
     thetadot[j] = data[i + 1];
     j++;
   }
-
+  /*
+  // for testing in rviz
   if (firstRead){
     firstRead = false;
     for (int i = 0; i < 4; i++){
      pos[i] = theta[i];
     }
   }
+  */
 }
 
 /*
@@ -346,34 +339,40 @@ void masterIntelligence::checkMyo(){
             }
           }
           for (size_t i = 0; i < 4; i++){ // calculates the a coefficients using goal ang and vel
-                float tf = 1.0;
-                
-                a[0][i] = theta[i];
-                a[1][i] = 0.0;
-                a[2][i] = 3.0 / (pow(tf, 2.0)) * (goalang[i] - theta[i]) - 2.0 / tf * thetadot[i] - 1.0 / tf * goalvel[i];
-                a[3][i] = -2.0 / (pow(tf, 3.0)) * (goalang[i] - theta[i]) + 1.0 / (pow(tf, 2.0)) * (goalvel[i] + thetadot[i]);
-                /*
-                // for testing in rviz
-                a[0][i] = pos[i];
-                a[1][i] = 0.0;
-                a[2][i] = 3.0 / (pow(tf, 2.0)) * (goalang[i] - pos[i]) - 2.0 / tf * 0.0 - 1.0 / tf * goalvel[i];
-                a[3][i] = -2.0 / (pow(tf, 3.0)) * (goalang[i] - pos[i]) + 1.0 / (pow(tf, 2.0)) * (goalvel[i] + 0.0);
-                */
-              }
+            float tf = 1.0;
+            
+            a[0][i] = theta[i];
+            a[1][i] = 0.0;
+            a[2][i] = 3.0 / (pow(tf, 2.0)) * (goalang[i] - theta[i]) - 2.0 / tf * thetadot[i] - 1.0 / tf * goalvel[i];
+            a[3][i] = -2.0 / (pow(tf, 3.0)) * (goalang[i] - theta[i]) + 1.0 / (pow(tf, 2.0)) * (goalvel[i] + thetadot[i]);
+            /*
+            // for testing in rviz
+            a[0][i] = pos[i];
+            a[1][i] = 0.0;
+            a[2][i] = 3.0 / (pow(tf, 2.0)) * (goalang[i] - pos[i]) - 2.0 / tf * 0.0 - 1.0 / tf * goalvel[i];
+            a[3][i] = -2.0 / (pow(tf, 3.0)) * (goalang[i] - pos[i]) + 1.0 / (pow(tf, 2.0)) * (goalvel[i] + 0.0);
+            */
+          }
+          float t = ros::Time::now().toSec() - gen_time.toSec();
+          for (int i = 0; i < 4; i++){
+            pos[i] = a[0][i] + a[1][i] * t + a[2][i] * pow(t, 2.0) + a[3][i] * pow(t, 3.0);
+            vel[i] = a[1][i] + 2.0 * a[2][i] * t + 3.0 * a[3][i] * pow(t, 2.0);
+            ang[i] = 2.0 * a[2][i] + 6.0 * a[3][i] * t;
+          }
         }
         break;
       }
       
       // mode 5 can controls the first two joints using the IMU from the Myo and then the four gestures to control the 3rd joint and the gripper
       case 5:{
-        if (first_oldangles){ 
-          first_oldangles = false;
+        if (modeChanged){ 
+          modeChanged = false;
           for (int i = 0; i<3; i++){
-            oldAngles[i] = angles[i];
+            old_eulerAng[i] = eulerAng[i];
           }
         }
-        pos[0] -= angles[0] - oldAngles[0];
-        pos[1] -= angles[1] - oldAngles[1];
+        pos[0] -= eulerAng[0] - old_eulerAng[0];
+        pos[1] -= eulerAng[1] - old_eulerAng[1];
         switch (gesture){
           case 1:{ break;}
           case 2:{ pos[3] += move_pose; break;}
@@ -383,7 +382,7 @@ void masterIntelligence::checkMyo(){
         }
         //old angles is used for setting the current joint angles when switching to this mode as start point so it only is controlled by the movement and not the direction
         for (int i = 0; i<3; i++){
-           oldAngles[i] = angles[i];
+           old_eulerAng[i] = eulerAng[i];
         }
         break;
       }
@@ -405,9 +404,18 @@ void masterIntelligence::checkMyo(){
   else if (pos[3] > 0)
     pos[3] = 0;
   
+  // message declarations
+  std_msgs::Float64MultiArray trajectories;
 
-
-  calc_traj();
+  // update trajectories
+  for (size_t i = 0; i < 4; i++)
+  {
+    trajectories.data.push_back(pos[i]);
+    trajectories.data.push_back(vel[i]);
+    trajectories.data.push_back(ang[i]);
+  }
+  // publish trajectories
+  trajectory_pub.publish(trajectories);
 
   // message declarations
   sensor_msgs::JointState joint_state;
