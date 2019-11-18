@@ -178,6 +178,7 @@ add_dependencies(arduino_serial crustcrawler_generate_messages_cpp)
 ## in contrast to setup.py, you can choose the destination
  install(PROGRAMS
    scripts/helper.py
+   scripts/test_tool.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 
