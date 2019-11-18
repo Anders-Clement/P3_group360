@@ -31,9 +31,10 @@ class Application(tk.Frame):
         self.robotPos = [[],[]]
         self.robotSetPos = [0,0,0,0,0]
         self.robotCapturing = False
+        self.plotUpdate = False
 
-        rospy.Subscriber("/crustcrawler/trajectory", Float64MultiArray, self.trajectoryCallback)
-        self.trajPub = rospy.Publisher('/crustcrawler/trajectory', Float64MultiArray, queue_size=10)
+        rospy.Subscriber("/crustcrawler/getAngleVel", Float64MultiArray, self.trajectoryCallback)
+        self.trajPub = rospy.Publisher('/crustcrawler/trajectory', Float64MultiArray)
         rospy.Timer(rospy.Duration(1.0/30.0), self.trajectoryUpdate)
 
     def create_widgets(self):
@@ -120,7 +121,7 @@ class Application(tk.Frame):
     def trajectoryCallback(self, inputData):
         if (self.robotCapturing):
             self.robotPos[0].append(rospy.get_rostime().to_sec())
-            self.robotPos[1].append(inputData.data[self.jointSelected * 3])
+            self.robotPos[1].append(inputData.data[self.jointSelected])
 
     def trajectoryUpdate(self, event):
         data = Float64MultiArray()
@@ -152,7 +153,14 @@ class Application(tk.Frame):
         self.robotCapturing = False
 
         for i in range(0, self.robotPos[0].__len__()):
-            self.robotPos[0][i] = self.robotPos[0][i] - self.robotCaptureStartTime 
+            self.robotPos[0][i] = self.robotPos[0][i] - self.robotCaptureStartTime
+
+        self.plotUpdate = True
+
+    def updater(self):
+        if (self.plotUpdate):
+            self.updatePlot()
+            self.plotUpdate = False
     
 
 def mainFun():
@@ -162,6 +170,7 @@ def mainFun():
 
     while not rospy.is_shutdown():
         app.update()
+        app.updater()
 
     root.destroy()
 
