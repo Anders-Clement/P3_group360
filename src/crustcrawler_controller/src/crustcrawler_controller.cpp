@@ -12,7 +12,7 @@ float posDesired[5];
 float velDesired[5];
 float accDesired[5];
 
-float kp[3] = {1.0, 1.0, 1.0};
+float kp[3] = {50.0, 50.0, 50.0};
 float kv[3] = {0, 0, 0};
 float ki[3] = {0, 0, 0};
 float errorSum[3] = {0.0, 0.0, 0.0};
@@ -29,11 +29,9 @@ void angleFunk(const std_msgs::Float64MultiArray &robotAngles_incomming)
   for (int i = 0; i < 5; i++)
   {
     int dataindex = i * 2;
-    posRobot[i] = -robotAngles_incomming.data[dataindex];
+    posRobot[i] = robotAngles_incomming.data[dataindex];
     velRobot[i] = robotAngles_incomming.data[dataindex + 1];
   }
-  posRobot[1] -= M_PI/2.0;  //compensate for wrong 0-position
-  //posRobot[2] -= M_PI/2.0;  //compensate for wrong 0-position
 }
 //gets the robots desired pos,vel,acc for diffrernt joints and puts into 3 different arrays.
 void trajectoryFunk(const std_msgs::Float64MultiArray &trajectoryAngles_incomming)
@@ -88,10 +86,12 @@ Vector3 calculateTorque(Vector3 posError, Vector3 velError)
   tmark.z = kp[2] * posError.z + kv[2] * velError.z + accDesired[2] + ki[2] * errorSum[2];
   float H11, H12, H13, H21, H22, H23, H31, H32, H33, VG1, VG2, VG3;
 
-  H11 = 0.032 + 0.026 * cos(2.0 * posRobot[1] + posRobot[2]) + 0.024 * cos(2.0 * posRobot[1]) + 3.3e-6 * sin(2.0 * posRobot[1]) + 0.026 * cos(posRobot[2]) - 1.0e-35 * cos(2.0 * posRobot[1] - 2.0 * posRobot[2]) + 8.4e-3 * cos(2.0 * posRobot[1] + 2.0 * posRobot[2]) + 5.6e-6 * sin(2.0 * posRobot[1] + 2.0 * posRobot[2]);
-  H12 = -4.8e-6 * cos(posRobot[1]) - 5.8e-7 * sin(posRobot[1]) + 3.5e-7 * cos(posRobot[1]) * cos(posRobot[2]) + 2.7e-6 * cos(posRobot[1]) * sin(posRobot[2]) + 2.7e-6 * cos(posRobot[2]) * sin(posRobot[1]) - 3.5e-7 * sin(posRobot[1]) * sin(posRobot[2]);
+  float correctedPosOne = posRobot[1] + M_PI/2.0;  //compensate for wrong 0-position
+
+  H11 = 0.032 + 0.026 * cos(2.0 * correctedPosOne + posRobot[2]) + 0.024 * cos(2.0 * correctedPosOne) + 3.3e-6 * sin(2.0 * correctedPosOne) + 0.026 * cos(posRobot[2]) - 1.0e-35 * cos(2.0 * correctedPosOne - 2.0 * posRobot[2]) + 8.4e-3 * cos(2.0 * correctedPosOne + 2.0 * posRobot[2]) + 5.6e-6 * sin(2.0 * correctedPosOne + 2.0 * posRobot[2]);
+  H12 = -4.8e-6 * cos(correctedPosOne) - 5.8e-7 * sin(correctedPosOne) + 3.5e-7 * cos(correctedPosOne) * cos(posRobot[2]) + 2.7e-6 * cos(correctedPosOne) * sin(posRobot[2]) + 2.7e-6 * cos(posRobot[2]) * sin(correctedPosOne) - 3.5e-7 * sin(correctedPosOne) * sin(posRobot[2]);
   H21 = H12;
-  H13 = 3.5e-7 * cos(posRobot[1]) * cos(posRobot[2]) + 2.7e-6 * cos(posRobot[1]) * sin(posRobot[2]) + 2.7e-6 * cos(posRobot[2]) * sin(posRobot[1]) - 3.5e-7 * sin(posRobot[1]) * sin(posRobot[2]);
+  H13 = 3.5e-7 * cos(correctedPosOne) * cos(posRobot[2]) + 2.7e-6 * cos(correctedPosOne) * sin(posRobot[2]) + 2.7e-6 * cos(posRobot[2]) * sin(correctedPosOne) - 3.5e-7 * sin(correctedPosOne) * sin(posRobot[2]);
   H31 = H13;
   H22 = 0.064 + 0.052 * cos(posRobot[2]);
   H23 = 0.017 + 0.026 * cos(posRobot[2]);
@@ -109,16 +109,16 @@ Vector3 calculateTorque(Vector3 posError, Vector3 velError)
   static float mp = 0.0002;
 
   float G1 = 0;
-  float G2 = 1.0*L2*g*m3*cos(posRobot[1]) + 1.0*L2*g*mp*cos(posRobot[1]) + 1.0*Lc2*g*m2*cos(posRobot[1]) + 1.0*Lc3*g*m3*cos(posRobot[1] + posRobot[2]) + 1.0*Lcp*g*mp*cos(posRobot[1] + posRobot[2]);
-  float G3 = 1.0*Lc3*g*m3*cos(posRobot[1] + posRobot[2]) + 1.0*Lcp*g*mp*cos(posRobot[1] + posRobot[2]);
+  float G2 = 1.0*L2*g*m3*cos(correctedPosOne) + 1.0*L2*g*mp*cos(correctedPosOne) + 1.0*Lc2*g*m2*cos(correctedPosOne) + 1.0*Lc3*g*m3*cos(correctedPosOne + posRobot[2]) + 1.0*Lcp*g*mp*cos(correctedPosOne + posRobot[2]);
+  float G3 = 1.0*Lc3*g*m3*cos(correctedPosOne + posRobot[2]) + 1.0*Lcp*g*mp*cos(correctedPosOne + posRobot[2]);
 
-  float V1 = -1.0*pow(L2, 2)*m3*velRobot[0]*velRobot[1]*sin(2*posRobot[1]) - 1.0*pow(L2, 2)*mp*velRobot[0]*velRobot[1]*sin(2*posRobot[1]) - 2.0*L2*Lc3*m3*velRobot[0]*velRobot[1]*sin(2*posRobot[1] + posRobot[2]) - 1.0*L2*Lc3*m3*velRobot[0]*velRobot[2]*sin(2*posRobot[1] + posRobot[2]) - 1.0*L2*Lc3*m3*velRobot[0]*velRobot[2]*sin(posRobot[2]) - 2.0*L2*Lcp*mp*velRobot[0]*velRobot[1]*sin(2*posRobot[1] + posRobot[2]) - 1.0*L2*Lcp*mp*velRobot[0]*velRobot[2]*sin(2*posRobot[1] + posRobot[2]) - 1.0*L2*Lcp*mp*velRobot[0]*velRobot[2]*sin(posRobot[2]) - 1.0*pow(Lc2, 2)*m2*velRobot[0]*velRobot[1]*sin(2*posRobot[1]) - 1.0*pow(Lc3, 2)*m3*velRobot[0]*velRobot[1]*sin(2*posRobot[1] + 2*posRobot[2]) - 1.0*pow(Lc3, 2)*m3*velRobot[0]*velRobot[2]*sin(2*posRobot[1] + 2*posRobot[2]) - 1.0*pow(Lcp, 2)*mp*velRobot[0]*velRobot[1]*sin(2*posRobot[1] + 2*posRobot[2]) -
-  1.0*pow(Lcp, 2)*mp*velRobot[0]*velRobot[2]*sin(2*posRobot[1] + 2*posRobot[2]) - 2.6469779601696886e-23*pow(cos(2*posRobot[0]) - 1, 2)*pow(velRobot[1], 2)*cos(posRobot[1]) - 0.00022544253000000001*velRobot[0]*velRobot[1]*sin(2*posRobot[1] + 2*posRobot[2]) - 0.00055856354*velRobot[0]*velRobot[1]*sin(2*posRobot[1]) + 1.1210459999999999e-5*velRobot[0]*velRobot[1]*cos(2*posRobot[1] + 2*posRobot[2]) + 6.6719999999999998e-6*velRobot[0]*velRobot[1]*cos(2*posRobot[1]) - 0.00022544253000000001*velRobot[0]*velRobot[2]*sin(2*posRobot[1] +
-  2*posRobot[2]) + 1.1210459999999999e-5*velRobot[0]*velRobot[2]*cos(2*posRobot[1] + 2*posRobot[2]) - 3.4514999999999999e-7*pow(velRobot[1], 2)*sin(posRobot[1] + posRobot[2]) + 4.77121e-6*pow(velRobot[1], 2)*sin(posRobot[1]) - 2.6469779601696886e-23*pow(velRobot[1], 2)*cos(2*posRobot[0] - posRobot[1]) - 2.6469779601696886e-23*pow(velRobot[1], 2)*cos(2*posRobot[0] + posRobot[1]) + 2.7200799999999999e-6*pow(velRobot[1], 2)*cos(posRobot[1] + posRobot[2]) - 5.8232999999999989e-7*pow(velRobot[1], 2)*cos(posRobot[1]) - 6.9029999999999998e-7*velRobot[1]*velRobot[2]*sin(posRobot[1] + posRobot[2]) + 5.4401599999999998e-6*velRobot[1]*velRobot[2]*cos(posRobot[1] + posRobot[2]) - 3.4514999999999999e-7*pow(velRobot[2], 2)*sin(posRobot[1] + posRobot[2]) + 2.7200799999999999e-6*pow(velRobot[2], 2)*cos(posRobot[1] + posRobot[2]);
+  float V1 = -1.0*pow(L2, 2)*m3*velRobot[0]*velRobot[1]*sin(2*correctedPosOne) - 1.0*pow(L2, 2)*mp*velRobot[0]*velRobot[1]*sin(2*correctedPosOne) - 2.0*L2*Lc3*m3*velRobot[0]*velRobot[1]*sin(2*correctedPosOne + posRobot[2]) - 1.0*L2*Lc3*m3*velRobot[0]*velRobot[2]*sin(2*correctedPosOne + posRobot[2]) - 1.0*L2*Lc3*m3*velRobot[0]*velRobot[2]*sin(posRobot[2]) - 2.0*L2*Lcp*mp*velRobot[0]*velRobot[1]*sin(2*correctedPosOne + posRobot[2]) - 1.0*L2*Lcp*mp*velRobot[0]*velRobot[2]*sin(2*correctedPosOne + posRobot[2]) - 1.0*L2*Lcp*mp*velRobot[0]*velRobot[2]*sin(posRobot[2]) - 1.0*pow(Lc2, 2)*m2*velRobot[0]*velRobot[1]*sin(2*correctedPosOne) - 1.0*pow(Lc3, 2)*m3*velRobot[0]*velRobot[1]*sin(2*correctedPosOne + 2*posRobot[2]) - 1.0*pow(Lc3, 2)*m3*velRobot[0]*velRobot[2]*sin(2*correctedPosOne + 2*posRobot[2]) - 1.0*pow(Lcp, 2)*mp*velRobot[0]*velRobot[1]*sin(2*correctedPosOne + 2*posRobot[2]) -
+  1.0*pow(Lcp, 2)*mp*velRobot[0]*velRobot[2]*sin(2*correctedPosOne + 2*posRobot[2]) - 2.6469779601696886e-23*pow(cos(2*posRobot[0]) - 1, 2)*pow(velRobot[1], 2)*cos(correctedPosOne) - 0.00022544253000000001*velRobot[0]*velRobot[1]*sin(2*correctedPosOne + 2*posRobot[2]) - 0.00055856354*velRobot[0]*velRobot[1]*sin(2*correctedPosOne) + 1.1210459999999999e-5*velRobot[0]*velRobot[1]*cos(2*correctedPosOne + 2*posRobot[2]) + 6.6719999999999998e-6*velRobot[0]*velRobot[1]*cos(2*correctedPosOne) - 0.00022544253000000001*velRobot[0]*velRobot[2]*sin(2*correctedPosOne +
+  2*posRobot[2]) + 1.1210459999999999e-5*velRobot[0]*velRobot[2]*cos(2*correctedPosOne + 2*posRobot[2]) - 3.4514999999999999e-7*pow(velRobot[1], 2)*sin(correctedPosOne + posRobot[2]) + 4.77121e-6*pow(velRobot[1], 2)*sin(correctedPosOne) - 2.6469779601696886e-23*pow(velRobot[1], 2)*cos(2*posRobot[0] - correctedPosOne) - 2.6469779601696886e-23*pow(velRobot[1], 2)*cos(2*posRobot[0] + correctedPosOne) + 2.7200799999999999e-6*pow(velRobot[1], 2)*cos(correctedPosOne + posRobot[2]) - 5.8232999999999989e-7*pow(velRobot[1], 2)*cos(correctedPosOne) - 6.9029999999999998e-7*velRobot[1]*velRobot[2]*sin(correctedPosOne + posRobot[2]) + 5.4401599999999998e-6*velRobot[1]*velRobot[2]*cos(correctedPosOne + posRobot[2]) - 3.4514999999999999e-7*pow(velRobot[2], 2)*sin(correctedPosOne + posRobot[2]) + 2.7200799999999999e-6*pow(velRobot[2], 2)*cos(correctedPosOne + posRobot[2]);
 
-  float V2 = 0.5*pow(L2, 2)*m3*pow(velRobot[0], 2)*sin(2*posRobot[1]) + 0.5*pow(L2, 2)*mp*pow(velRobot[0], 2)*sin(2*posRobot[1]) + 1.0*L2*Lc3*m3*pow(velRobot[0], 2)*sin(2*posRobot[1] + posRobot[2]) - 2.0*L2*Lc3*m3*velRobot[1]*velRobot[2]*sin(posRobot[2]) - 1.0*L2*Lc3*m3*pow(velRobot[2], 2)*sin(posRobot[2]) + 1.0*L2*Lcp*mp*pow(velRobot[0], 2)*sin(2*posRobot[1] + posRobot[2]) - 2.0*L2*Lcp*mp*velRobot[1]*velRobot[2]*sin(posRobot[2]) - 1.0*L2*Lcp*mp*pow(velRobot[2], 2)*sin(posRobot[2]) + 0.5*pow(Lc2, 2)*m2*pow(velRobot[0], 2)*sin(2*posRobot[1]) + 0.5*pow(Lc3, 2)*m3*pow(velRobot[0], 2)*sin(2*posRobot[1] + 2*posRobot[2]) + 0.5*pow(Lcp, 2)*mp*pow(velRobot[0], 2)*sin(2*posRobot[1] + 2*posRobot[2]) - 2.6469779601696886e-23*pow(1 - cos(2*posRobot[0]), 2)*velRobot[0]*velRobot[1]*cos(posRobot[1]) + 0.00011272126500000001*pow(velRobot[0], 2)*sin(2*posRobot[1] + 2*posRobot[2]) + 0.00027928177*pow(velRobot[0], 2)*sin(2*posRobot[1]) - 5.6052299999999997e-6*pow(velRobot[0], 2)*cos(2*posRobot[1] + 2*posRobot[2]) - 3.3359999999999999e-6*pow(velRobot[0], 2)*cos(2*posRobot[1]) - 2.6469779601696886e-23*velRobot[0]*velRobot[1]*cos(2*posRobot[0] - posRobot[1]) - 2.6469779601696886e-23*velRobot[0]*velRobot[1]*cos(2*posRobot[0] + posRobot[1]) + 5.2939559203393771e-23*velRobot[0]*velRobot[1]*cos(posRobot[1]);
+  float V2 = 0.5*pow(L2, 2)*m3*pow(velRobot[0], 2)*sin(2*correctedPosOne) + 0.5*pow(L2, 2)*mp*pow(velRobot[0], 2)*sin(2*correctedPosOne) + 1.0*L2*Lc3*m3*pow(velRobot[0], 2)*sin(2*correctedPosOne + posRobot[2]) - 2.0*L2*Lc3*m3*velRobot[1]*velRobot[2]*sin(posRobot[2]) - 1.0*L2*Lc3*m3*pow(velRobot[2], 2)*sin(posRobot[2]) + 1.0*L2*Lcp*mp*pow(velRobot[0], 2)*sin(2*correctedPosOne + posRobot[2]) - 2.0*L2*Lcp*mp*velRobot[1]*velRobot[2]*sin(posRobot[2]) - 1.0*L2*Lcp*mp*pow(velRobot[2], 2)*sin(posRobot[2]) + 0.5*pow(Lc2, 2)*m2*pow(velRobot[0], 2)*sin(2*correctedPosOne) + 0.5*pow(Lc3, 2)*m3*pow(velRobot[0], 2)*sin(2*correctedPosOne + 2*posRobot[2]) + 0.5*pow(Lcp, 2)*mp*pow(velRobot[0], 2)*sin(2*correctedPosOne + 2*posRobot[2]) - 2.6469779601696886e-23*pow(1 - cos(2*posRobot[0]), 2)*velRobot[0]*velRobot[1]*cos(correctedPosOne) + 0.00011272126500000001*pow(velRobot[0], 2)*sin(2*correctedPosOne + 2*posRobot[2]) + 0.00027928177*pow(velRobot[0], 2)*sin(2*correctedPosOne) - 5.6052299999999997e-6*pow(velRobot[0], 2)*cos(2*correctedPosOne + 2*posRobot[2]) - 3.3359999999999999e-6*pow(velRobot[0], 2)*cos(2*correctedPosOne) - 2.6469779601696886e-23*velRobot[0]*velRobot[1]*cos(2*posRobot[0] - correctedPosOne) - 2.6469779601696886e-23*velRobot[0]*velRobot[1]*cos(2*posRobot[0] + correctedPosOne) + 5.2939559203393771e-23*velRobot[0]*velRobot[1]*cos(correctedPosOne);
 
-  float V3 = 0.5*L2*Lc3*m3*pow(velRobot[0], 2)*sin(2*posRobot[1] + posRobot[2]) + 0.5*L2*Lc3*m3*pow(velRobot[0], 2)*sin(posRobot[2]) + 1.0*L2*Lc3*m3*pow(velRobot[1], 2)*sin(posRobot[2]) + 0.5*L2*Lcp*mp*pow(velRobot[0], 2)*sin(2*posRobot[1] + posRobot[2]) + 0.5*L2*Lcp*mp*pow(velRobot[0], 2)*sin(posRobot[2]) + 1.0*L2*Lcp*mp*pow(velRobot[1], 2)*sin(posRobot[2]) + 0.5*pow(Lc3, 2)*m3*pow(velRobot[0], 2)*sin(2*posRobot[1] + 2*posRobot[2]) + 0.5*pow(Lcp, 2)*mp*pow(velRobot[0], 2)*sin(2*posRobot[1] + 2*posRobot[2]) + 0.00011272126500000001*pow(velRobot[0], 2)*sin(2*posRobot[1] + 2*posRobot[2]) - 5.6052299999999997e-6*pow(velRobot[0], 2)*cos(2*posRobot[1] + 2*posRobot[2]);
+  float V3 = 0.5*L2*Lc3*m3*pow(velRobot[0], 2)*sin(2*correctedPosOne + posRobot[2]) + 0.5*L2*Lc3*m3*pow(velRobot[0], 2)*sin(posRobot[2]) + 1.0*L2*Lc3*m3*pow(velRobot[1], 2)*sin(posRobot[2]) + 0.5*L2*Lcp*mp*pow(velRobot[0], 2)*sin(2*correctedPosOne + posRobot[2]) + 0.5*L2*Lcp*mp*pow(velRobot[0], 2)*sin(posRobot[2]) + 1.0*L2*Lcp*mp*pow(velRobot[1], 2)*sin(posRobot[2]) + 0.5*pow(Lc3, 2)*m3*pow(velRobot[0], 2)*sin(2*correctedPosOne + 2*posRobot[2]) + 0.5*pow(Lcp, 2)*mp*pow(velRobot[0], 2)*sin(2*correctedPosOne + 2*posRobot[2]) + 0.00011272126500000001*pow(velRobot[0], 2)*sin(2*correctedPosOne + 2*posRobot[2]) - 5.6052299999999997e-6*pow(velRobot[0], 2)*cos(2*correctedPosOne + 2*posRobot[2]);
 
 
   tau.x = H12 * tmark.x + H12 * tmark.y + H13 * tmark.z + G1 + V1;
