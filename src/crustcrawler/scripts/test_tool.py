@@ -45,7 +45,7 @@ class Application(tk.Frame):
             var = tk.IntVar()
             self.checkBoxs[i] = tk.Checkbutton(self.buttonFrame, variable=var)
             self.checkBoxs[i]["text"] = self.buttons[i]
-            self.checkBoxs[i]["command"] = self.updatePlot
+            self.checkBoxs[i]["command"] = self.disableButton
             self.checkBoxsVariables.append(var)
             self.checkBoxs[i].grid(row=i+8, column=0)
 
@@ -64,11 +64,15 @@ class Application(tk.Frame):
 
         self.inputBox = []
 
+        self.statusLabel = tk.Label(self.buttonFrame, text="Status: ")
+        self.statusLabel.grid(row=1, column=0)
+
         for i in range(0,labels.__len__()):
             tk.Label(self.inputFrame, text=labels[i]).grid(row=i, column=0)
             self.inputBox.append(tk.Entry(self.inputFrame))
             self.inputBox[i].insert(tk.INSERT,(defaults[i]))
             self.inputBox[i].grid(row=i, column=1)
+            self.inputBox[i].bind("<Enter>", self.disableButton)
 
     def matplot(self):
         fig = Figure(figsize=(5, 4), dpi=100)
@@ -86,8 +90,13 @@ class Application(tk.Frame):
         self.toolbar.update()
         self.canvas.get_tk_widget().pack(anchor=tk.S)
 
+    def updatePlotButton(self):
+        self.statusLabel["text"] = "Status: Updating the plot."
+        self.plotUpdate = True
+
     def updatePlot(self):
-        self.t = np.arange(0, float(self.inputBox[0].get()), 0.01)
+
+        self.t = np.arange(0, float(self.inputBox[0].get()), (1.0/30.0))
         self.Y = []
         self.jointSelected = int(self.inputBox[4].get())
 
@@ -117,6 +126,8 @@ class Application(tk.Frame):
         self.canvasSubplot.plot(self.robotPos[0], self.robotPos[1], 'r')
 
         self.canvas.draw()
+        self.statusLabel["text"] = "Status: Plot Updated."
+        self.enableButton()
 
     def trajectoryCallback(self, inputData):
         if (self.robotCapturing):
@@ -124,6 +135,9 @@ class Application(tk.Frame):
             self.robotPos[1].append(inputData.data[self.jointSelected*2])
 
     def trajectoryUpdate(self, event):
+        if self.robotCapturing == False:
+            return
+
         data = Float64MultiArray()
         data.data = [0]*15
 
@@ -145,6 +159,7 @@ class Application(tk.Frame):
 
     def startCapture(self):
         rospy.Timer(rospy.Duration(float(self.inputBox[0].get())), self.stopCapture, True)
+        self.statusLabel["text"] = "Status: Capturing Robot."
         self.robotCaptureStartTime = rospy.get_rostime().to_sec()
         self.robotCapturing = True
         self.robotPos = [[],[]]
@@ -156,11 +171,18 @@ class Application(tk.Frame):
             self.robotPos[0][i] = self.robotPos[0][i] - self.robotCaptureStartTime
 
         self.plotUpdate = True
+        self.statusLabel["text"] = "Status: Capture completed."
 
     def updater(self):
         if (self.plotUpdate):
             self.updatePlot()
             self.plotUpdate = False
+
+    def disableButton(self, event=None):
+        self.captureButton.config(state=tk.DISABLED)
+
+    def enableButton(self):
+        self.captureButton.config(state=tk.NORMAL)
 
 
 def mainFun():
@@ -169,8 +191,8 @@ def mainFun():
     app = Application(master=root)
 
     while not rospy.is_shutdown():
-        app.update()
         app.updater()
+        app.update()
 
     root.destroy()
 
