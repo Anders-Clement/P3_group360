@@ -121,7 +121,7 @@ class Application(tk.Frame):
     def trajectoryCallback(self, inputData):
         if (self.robotCapturing):
             self.robotPos[0].append(rospy.get_rostime().to_sec())
-            self.robotPos[1].append(inputData.data[self.jointSelected])
+            self.robotPos[1].append(inputData.data[self.jointSelected*2])
 
     def trajectoryUpdate(self, event):
         data = Float64MultiArray()
@@ -161,7 +161,7 @@ class Application(tk.Frame):
         if (self.plotUpdate):
             self.updatePlot()
             self.plotUpdate = False
-    
+
 
 def mainFun():
     rospy.init_node('CrustCrawler_Plotter', anonymous=True)
