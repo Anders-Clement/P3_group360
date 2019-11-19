@@ -6,3 +6,4 @@ run.sh
 .vscode/task.json
 .vscode/launch.json
 .gitignore
+.vscode/arduino.json
