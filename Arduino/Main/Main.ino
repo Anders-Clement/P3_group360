@@ -19,8 +19,8 @@ std_msgs::Float64MultiArray angleVel_msg;
 void setTorque_callback(const std_msgs::Float64MultiArray& msg);
 
 ros::NodeHandle  nh;
-ros::Publisher getAngleVel_pub("getAngleVel", &angleVel_msg);
-ros::Subscriber<std_msgs::Float64MultiArray> setTorques_sub("setTorques", &setTorque_callback);
+ros::Publisher getAngleVel_pub("/crustcrawler/getAngleVel", &angleVel_msg);
+ros::Subscriber<std_msgs::Float64MultiArray> setTorques_sub("/crustcrawler/setTorques", &setTorque_callback);
 
 
 static float motorOffsets[5] = {0, M_PI/4.0, M_PI, M_PI * (3.0/4.0), M_PI};
@@ -41,7 +41,7 @@ void setup()
   angleVel_msg.data = (float*) malloc(sizeof(float) * 10);
   //set length of msg, otherwise everything will not be sent
   angleVel_msg.data_length = 10;
-  
+
   lastMessageTime = millis();
 }
 
@@ -50,7 +50,7 @@ bool led = true;
 void loop()
 {
   nh.spinOnce();
-  
+
   if(millis() - lastMessageTime > 250) //no message received for 250ms, sound the alarm!
   {
     digitalWrite(buzz_pin, HIGH);
@@ -63,7 +63,7 @@ void loop()
 void setTorque_callback(const std_msgs::Float64MultiArray& msg)
 {
   lastMessageTime = millis();
-  
+
   long thetas[5];
   float velocities[5];
 
