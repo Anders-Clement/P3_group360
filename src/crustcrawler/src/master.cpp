@@ -77,11 +77,14 @@ void masterIntelligence::get_angle_vel_callback(const std_msgs::Float64MultiArra
   vector<double> data = msg->data;
 
   // takes the current pos and vel and divides them into 2 different vectors
-  int j = 0;
-  for (int i = 0; i < 10; i += 2){
-    pos[j] = data[i];
-    vel[j] = data[i + 1];
-    j++;
+  if (update_angle_vel){
+    update_angle_vel = false;
+    int j = 0;
+    for (int i = 0; i < 10; i += 2){
+      pos[j] = data[i];
+      vel[j] = data[i + 1];
+      j++;
+    }
   }
 }
 
@@ -302,6 +305,7 @@ void masterIntelligence::checkMyo(){
               for (size_t i = 0; i < 4; i++){ 
                 goalang[i] = 0.0;
               }
+
               break;
             }
             case 3:{ // sets goal position to the corresponding macro
@@ -373,16 +377,16 @@ void masterIntelligence::checkMyo(){
 
 
 // setting the joint limits
-  if (pos[1] > 3.14)
-    pos[1] = 3.14;
-  else if (pos[1] < 0)
-    pos[1] = 0;
+  if (pos[1] > 3.14/2)
+    pos[1] = 3.14/2;
+  else if (pos[1] < -3.14/2)
+    pos[1] = -3.14/2;
   if (pos[2] < -3.14/2)
     pos[2] = -3.14/2;
   else if (pos[2] > 3.14/2)
     pos[2] = 3.14/2;
-  if (pos[3] < -3.15/2)
-    pos[3] = -3.15/2;
+  if (pos[3] < -3.14/2)
+    pos[3] = -3.14/2;
   else if (pos[3] > 0)
     pos[3] = 0;
   
