@@ -23,7 +23,7 @@ class ProtocolController {
     //tænd eller sluk for torque indistillingen.
     void toggleTorque(unsigned char address, bool onTrue);
     //set operations mode, 0 = current mode, 1 = velocity mode, 3 = position mode (default).
-    void setOperatingMode(unsigned char address, int mode);
+    void setOperatingMode(unsigned char address, unsigned char mode);
 
     //Function til at sætte motor torque.
     void setGoalCurrent(unsigned char address, short current);

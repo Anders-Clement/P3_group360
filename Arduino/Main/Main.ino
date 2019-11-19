@@ -29,9 +29,8 @@ static float motorOffsets[5] = {-M_PI/2.0, M_PI/4.0, M_PI, M_PI * (3.0/4.0), M_P
 void setup()
 {
   Serial.begin(250000);
-
   controler_ptr = new ProtocolController();
-
+  
   nh.getHardware()->setBaud(250000);
 
   nh.initNode();
@@ -42,8 +41,10 @@ void setup()
   angleVel_msg.data = (float*) malloc(sizeof(float) * 10);
   //set length of msg, otherwise everything will not be sent
   angleVel_msg.data_length = 10;
-
+  
   lastMessageTime = millis();
+  setPWMMode();
+  enableTorque(); //turn on all motors
 }
 
 bool led = true;
@@ -51,14 +52,14 @@ bool led = true;
 void loop()
 {
   nh.spinOnce();
-
+  /*
   if(millis() - lastMessageTime > 250) //no message received for 250ms, sound the alarm!
   {
     digitalWrite(buzz_pin, HIGH);
     disableTorque();
     delay(1000);
     digitalWrite(buzz_pin, LOW);
-  }
+  } */
 }
 
 void setTorque_callback(const std_msgs::Float64MultiArray& msg)
@@ -103,7 +104,7 @@ void enableTorque()
 void setPWMMode()
 {
   for(int i = 1; i < 6; i++)
-    controler_ptr->setOperatingMode(i, 0xF);
+    controler_ptr->setOperatingMode(i, 0x10);
 }
 
 void disableTorque()
