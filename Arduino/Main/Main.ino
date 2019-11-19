@@ -19,9 +19,11 @@ std_msgs::Float64MultiArray angleVel_msg;
 void setTorque_callback(const std_msgs::Float64MultiArray& msg);
 
 ros::NodeHandle  nh;
-ros::Publisher getAngleVel_pub("/crustcrawler/getAngleVel", &angleVel_msg);
-ros::Subscriber<std_msgs::Float64MultiArray> setTorques_sub("/crustcrawler/setTorques", &setTorque_callback);
+ros::Publisher getAngleVel_pub("getAngleVel", &angleVel_msg);
+ros::Subscriber<std_msgs::Float64MultiArray> setTorques_sub("setTorques", &setTorque_callback);
 
+
+static float motorOffsets[5] = {0, M_PI/4.0, M_PI, M_PI * (3.0/4.0), M_PI};
 
 void setup()
 {
@@ -67,7 +69,7 @@ void setTorque_callback(const std_msgs::Float64MultiArray& msg)
 
   for (int i = 1; i < 6; i++)
   {
-    thetas[i - 1] = controler_ptr->getPos(i);
+    thetas[i - 1] = (controler_ptr->getPos(i) * 0.0015336) - motorOffsets[i-1];
     velocities[i - 1] = (float)controler_ptr->getVel(i) * 0.0229; //convert to rad/s (0.229rpm/step * 0.1(rad/sec)/rpm
   } //this for loop takes 18.3ms
 
