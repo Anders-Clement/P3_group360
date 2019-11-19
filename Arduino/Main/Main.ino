@@ -19,8 +19,8 @@ std_msgs::Float64MultiArray angleVel_msg;
 void setTorque_callback(const std_msgs::Float64MultiArray& msg);
 
 ros::NodeHandle  nh;
-ros::Publisher getAngleVel_pub("getAngleVel", &angleVel_msg);
-ros::Subscriber<std_msgs::Float64MultiArray> setTorques_sub("setTorques", &setTorque_callback);
+ros::Publisher getAngleVel_pub("/crustcrawler/getAngleVel", &angleVel_msg);
+ros::Subscriber<std_msgs::Float64MultiArray> setTorques_sub("/crustcrawler/setTorques", &setTorque_callback);
 
 
 void setup()
