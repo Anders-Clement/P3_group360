@@ -23,7 +23,7 @@ ros::Publisher getAngleVel_pub("/crustcrawler/getAngleVel", &angleVel_msg);
 ros::Subscriber<std_msgs::Float64MultiArray> setTorques_sub("/crustcrawler/setTorques", &setTorque_callback);
 
 
-static float motorOffsets[5] = {0.0, M_PI/4.0, M_PI, M_PI * (3.0/4.0), M_PI};
+static float motorOffsets[5] = {-M_PI/2.0, M_PI/4.0, M_PI, M_PI * (3.0/4.0), M_PI};
 
 void setup()
 {
