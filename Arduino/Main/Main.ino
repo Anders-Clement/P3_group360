@@ -64,12 +64,12 @@ void setTorque_callback(const std_msgs::Float64MultiArray& msg)
 {
   lastMessageTime = millis();
 
-  long thetas[5];
+  float thetas[5];
   float velocities[5];
 
   for (int i = 1; i < 6; i++)
   {
-    thetas[i - 1] = (controler_ptr->getPos(i) * 0.0015336) - motorOffsets[i-1];
+    thetas[i - 1] = (controler_ptr->getPos(i) * 0.0015336f) - motorOffsets[i-1];
     velocities[i - 1] = (float)controler_ptr->getVel(i) * 0.0229; //convert to rad/s (0.229rpm/step * 0.1(rad/sec)/rpm
   } //this for loop takes 18.3ms
 
