@@ -17,13 +17,14 @@ ProtocolController* controler_ptr;
 //ROS specific data:
 std_msgs::Float64MultiArray angleVel_msg;
 void setTorque_callback(const std_msgs::Float64MultiArray& msg);
+void setPWMMode();
 
 ros::NodeHandle  nh;
 ros::Publisher getAngleVel_pub("/crustcrawler/getAngleVel", &angleVel_msg);
 ros::Subscriber<std_msgs::Float64MultiArray> setTorques_sub("/crustcrawler/setTorques", &setTorque_callback);
 
 
-static float motorOffsets[5] = {0.0, M_PI/4.0, M_PI, M_PI * (3.0/4.0), M_PI};
+static float motorOffsets[5] = {M_PI*(4.0/3.0) - 0.66, M_PI/4.0, M_PI, M_PI * (3.0/4.0), M_PI};
 
 void setup()
 {
@@ -97,6 +98,12 @@ void enableTorque()
   for (int i = 1; i < 6; i++) {
     controler_ptr->toggleTorque(i, true);
   }
+}
+
+void setPWMMode()
+{
+  for(int i = 1; i < 6; i++)
+    controler_ptr->setOperatingMode(i, 0xF);
 }
 
 void disableTorque()
