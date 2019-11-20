@@ -12,11 +12,10 @@ float posDesired[5];
 float velDesired[5];
 float accDesired[5];
 
-float kp[5] = {50.0, 50.0, 50.0, 0.0, 0.0};
-float kv[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
-float ki[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
+float kp[5] = {5.0, 10.0, 11.0, 5.0, 5.0};
+float kv[5] = {0.0, 2.0, 4.4, 0.0, 0.0};
+float ki[5] = {0.0, 0.2, 0.2, 0.0, 0.0};
 float errorSum[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
-
 
 //gets the robots current angeles/velocities and puts into 2 arrays.
 void angleFunk(const std_msgs::Float64MultiArray &robotAngles_incomming)
@@ -92,19 +91,18 @@ float *calculateTorque()
   for (int i = 0; i < 5; i++)
   {
     velError[i] = velErrorptr[i];
-  
   }
 
   //this section calculates t'
   static float tau[5];
   float tmark[5];
 
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < 5; i++)
   {
-    tmark[i] = kp[i] * posError[i] + kv[i] * velError[i] + accDesired[i] + ki[i] * errorSum[i];
+    tmark[i] = kp[i] * posError[i] + kv[i] * velError[i] + ki[i] * errorSum[i] + accDesired[i];
   }
-  tmark[3] = 0;
-  tmark[4] = 0;
+  //tmark[3] = kp[3] * posError[3] + accDesired[3];
+  //tmark[4] = kp[4] * posError[4] + accDesired[4];
 
   //calculates the dynamic part
   float H11, H12, H13, H21, H22, H23, H31, H32, H33, VG1, VG2, VG3;
@@ -142,26 +140,24 @@ float *calculateTorque()
 
   float V3 = 0.5 * L2 * Lc3 * m3 * pow(velRobot[0], 2) * sin(2 * correctedPosOne + posRobot[2]) + 0.5 * L2 * Lc3 * m3 * pow(velRobot[0], 2) * sin(posRobot[2]) + 1.0 * L2 * Lc3 * m3 * pow(velRobot[1], 2) * sin(posRobot[2]) + 0.5 * L2 * Lcp * mp * pow(velRobot[0], 2) * sin(2 * correctedPosOne + posRobot[2]) + 0.5 * L2 * Lcp * mp * pow(velRobot[0], 2) * sin(posRobot[2]) + 1.0 * L2 * Lcp * mp * pow(velRobot[1], 2) * sin(posRobot[2]) + 0.5 * pow(Lc3, 2) * m3 * pow(velRobot[0], 2) * sin(2 * correctedPosOne + 2 * posRobot[2]) + 0.5 * pow(Lcp, 2) * mp * pow(velRobot[0], 2) * sin(2 * correctedPosOne + 2 * posRobot[2]) + 0.00011272126500000001 * pow(velRobot[0], 2) * sin(2 * correctedPosOne + 2 * posRobot[2]) - 5.6052299999999997e-6 * pow(velRobot[0], 2) * cos(2 * correctedPosOne + 2 * posRobot[2]);
 
-
-
-  tau[0] = H11 * tmark[0] + H12 * tmark[0] + H13 * tmark[1] + G1 + V1;  
-  tau[1] = H21 * tmark[1] + H22 * tmark[1] + H23 * tmark[2] + G2 + V2;
-  tau[2] = H31 * tmark[2] + H32 * tmark[2] + H33 * tmark[3] + G3 + V3;
-  tau[3] = 0;
-  tau[4] = 0;
+  tau[0] = H11 * tmark[0] + H12 * tmark[0] + H13 * tmark[0] + G1 + V1;
+  tau[1] = H21 * tmark[1] + H22 * tmark[1] + H23 * tmark[1] + G2 + V2;
+  tau[2] = H31 * tmark[2] + H32 * tmark[2] + H33 * tmark[2] + G3 + V3;
+  tau[3] = tmark[3] * 0.0004618954*100;
+  tau[4] = tmark[4] * 0.0004618954*100;
 
   return tau;
 }
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "talker");
+  ros::init(argc, argv, "controller");
   ros::NodeHandle n;
 
   ros::Publisher torque_pub = n.advertise<std_msgs::Float64MultiArray>("/crustcrawler/setTorques", 1); //publishes torque
   ros::Subscriber angleGetter_sub = n.subscribe("/crustcrawler/getAngleVel", 1, angleFunk);            //gets curent angles
   ros::Subscriber desiredAngle_sub = n.subscribe("/crustcrawler/trajectory", 1, trajectoryFunk);       //get desired angles
 
-  ros::Rate loop_rate(30);
+  ros::Rate loop_rate(20);
 
   int count = 0;
 
@@ -176,7 +172,7 @@ int main(int argc, char **argv)
     {
       tauCalculated[i] = tauPtr[i];
     }
-   
+
     std_msgs::Float64MultiArray msg;
     msg.data.push_back(tauCalculated[0]);
     msg.data.push_back(tauCalculated[1]);
