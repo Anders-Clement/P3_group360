@@ -19,8 +19,8 @@ def callbackActual(data):
 
     actualPos[0].append(rospy.get_rostime().to_sec())
     actualPos[1].append( data.data[0] )
-    actualPos[2].append( data.data[3] )
-    actualPos[3].append( data.data[6] )
+    actualPos[2].append( data.data[2] )
+    actualPos[3].append( data.data[4] )
 
 def callbackTraj(data):
     global running

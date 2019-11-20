@@ -35,7 +35,7 @@ class Application(tk.Frame):
 
         rospy.Subscriber("/crustcrawler/getAngleVel", Float64MultiArray, self.trajectoryCallback)
         self.trajPub = rospy.Publisher('/crustcrawler/trajectory', Float64MultiArray)
-        rospy.Timer(rospy.Duration(1.0/30.0), self.trajectoryUpdate)
+        rospy.Timer(rospy.Duration(1.0/20.0), self.trajectoryUpdate)
 
     def create_widgets(self):
         self.buttonFrame = tk.Frame(self.master)
@@ -59,8 +59,8 @@ class Application(tk.Frame):
         self.inputFrame = tk.Frame(self.buttonFrame)
         self.inputFrame.grid(column=0, row=0)
 
-        labels = ["Time (sec)", "Freq (Hz)", "Multi (-)", "Offset (-)", "Joint (-)"]
-        defaults = [np.pi, 1, 1, 0, 0]
+        labels = ["Time (sec)", "Freq (Hz)", "Multi (-)", "Offset (-)", "Joint (-)", "Joint0 (rad)"]
+        defaults = [np.pi, 1, 1, 0, 0, 6.3]
 
         self.inputBox = []
 
@@ -96,9 +96,11 @@ class Application(tk.Frame):
 
     def updatePlot(self):
 
-        self.t = np.arange(0, float(self.inputBox[0].get()), (1.0/30.0))
+        self.t = np.arange(0, float(self.inputBox[0].get()), (1.0/20.0))
         self.Y = []
         self.jointSelected = int(self.inputBox[4].get())
+
+        self.robotSetPos[0] = float(self.inputBox[5].get())
 
         empty = sp.symbols('empty')
         finalFunction = empty
