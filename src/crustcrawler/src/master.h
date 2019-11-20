@@ -38,11 +38,6 @@ public:
     float goalvel[4];
     float tf = 2.0;
 
-    // message declarations
-    std_msgs::Float64MultiArray trajectories;
-    sensor_msgs::JointState joint_state;
-    std_msgs::UInt8 vibrate;
-    
     float pos[4] = {0};
     float vel[4] = {0};
     float ang[4] = {0};
