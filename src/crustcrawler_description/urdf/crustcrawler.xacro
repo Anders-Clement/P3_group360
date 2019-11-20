@@ -103,7 +103,7 @@
     <parent link="base"/>
     <child link="link1"/>
     <origin xyz="0 0 0" rpy= "0 0 0"/>
-    <dynamics damping="0.7" friction="0.1"/>
+    <dynamics damping="1.0" friction="0.4"/>
   </joint>
 
 
@@ -134,14 +134,12 @@
     </inertial>
   </link>
 
-
-
   <joint name="joint2" type="continuous">
     <origin xyz="0 0 ${L1}" rpy="${-M_pi / 2} ${-M_pi/2} ${M_pi}"/>
     <axis xyz="0 0 1"/>
     <parent link="link1"/>
     <child link="link2"/>
-    <dynamics damping="0.7" friction="0.1"/>
+    <dynamics damping="1.0" friction="0.4"/>
   </joint>
 
   <!-- link 2 -->
