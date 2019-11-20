@@ -49,9 +49,6 @@ void masterIntelligence::myo_raw_pose_callback(const geometry_msgs::PoseStamped:
 //checks what gesture the myo detects and changes it from string to int representation
 void masterIntelligence::myo_raw_gest_str_callback(const std_msgs::String::ConstPtr &msg){
 
-
-  std_msgs::UInt8 vibrate;
-
   string data = msg->data;
   const string known_gestures[] = {"UNKNOWN", "REST", "FIST", "FINGERS_SPREAD", "WAVE_IN", "WAVE_OUT", "THUMB_TO_PINKY"};
 
@@ -396,14 +393,13 @@ void masterIntelligence::checkMyo(){
     pos[3] = 0;
 
 
-    // message declarations
-    std_msgs::Float64MultiArray trajectories;
-    sensor_msgs::JointState joint_state;
+
 
 
   //update joint_state
   joint_state.header.stamp = ros::Time::now();
-
+  joint_state.name.clear();
+  joint_state.position.clear();
   joint_state.name.push_back("joint1");
   joint_state.name.push_back("joint2");
   joint_state.name.push_back("joint3");
@@ -414,13 +410,13 @@ void masterIntelligence::checkMyo(){
   joint_state.position.push_back(pos[1]);
   joint_state.position.push_back(pos[2]);
   joint_state.position.push_back(pos[3]);
-  joint_state.position.push_back(-pos[3]);
+  joint_state.position.push_back(pos[3]);
 
   //send the joint state and transform
   joint_pub.publish(joint_state);
 
 
-
+  trajectories.data.clear();
     // update trajectories
   for (size_t i = 0; i < 4; i++)
   {
@@ -428,6 +424,10 @@ void masterIntelligence::checkMyo(){
     trajectories.data.push_back(vel[i]);
     trajectories.data.push_back(ang[i]);
   }
+  trajectories.data.push_back(-pos[3]);
+  trajectories.data.push_back(-vel[3]); //add last gripper as well, since pos,vel,ang only has 4 entries
+  trajectories.data.push_back(-ang[3]); //Jonas you lazy bastard!
+  // you should really add another entry to pos,vel,ang such that the gripper also can move laterally! //
   // publish trajectories
   trajectory_pub.publish(trajectories);
 
@@ -438,7 +438,7 @@ void masterIntelligence::checkMyo(){
 int main(int argc, char **argv){
   ros::init(argc, argv, "master_node");
   masterIntelligence master_node;
-  ros::Rate loop_rate(30);
+  ros::Rate loop_rate(20);
 
   while (ros::ok()){
     master_node.checkMyo();

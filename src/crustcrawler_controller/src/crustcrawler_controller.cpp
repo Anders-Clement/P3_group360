@@ -12,7 +12,7 @@ float posDesired[5];
 float velDesired[5];
 float accDesired[5];
 
-float kp[5] = {5.0, 10.0, 11.0, 5.0, 5.0};
+float kp[5] = {5.0, 10.0, 11.0, 15.0, 15.0};
 float kv[5] = {0.0, 2.0, 4.4, 0.0, 0.0};
 float ki[5] = {0.0, 0.2, 0.2, 0.0, 0.0};
 float errorSum[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
