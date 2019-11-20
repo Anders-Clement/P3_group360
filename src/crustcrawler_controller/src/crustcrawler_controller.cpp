@@ -157,7 +157,7 @@ int main(int argc, char **argv)
   ros::Subscriber angleGetter_sub = n.subscribe("/crustcrawler/getAngleVel", 1, angleFunk);            //gets curent angles
   ros::Subscriber desiredAngle_sub = n.subscribe("/crustcrawler/trajectory", 1, trajectoryFunk);       //get desired angles
 
-  ros::Rate loop_rate(30);
+  ros::Rate loop_rate(20);
 
   int count = 0;
 
