@@ -2,6 +2,7 @@
 #include "Protocol_2.h"
 #include <ros.h>
 #include "std_msgs/Float64MultiArray.h"
+#include "std_msgs/Int16.h"
 
 #define buzz_pin 48
 
@@ -17,12 +18,13 @@ ProtocolController* controler_ptr;
 //ROS specific data:
 std_msgs::Float64MultiArray angleVel_msg;
 void setTorque_callback(const std_msgs::Float64MultiArray& msg);
+void command_callback(const std_msgs::Int16& msg);
 void setPWMMode();
 
 ros::NodeHandle  nh;
 ros::Publisher getAngleVel_pub("/crustcrawler/getAngleVel", &angleVel_msg);
 ros::Subscriber<std_msgs::Float64MultiArray> setTorques_sub("/crustcrawler/setTorques", &setTorque_callback);
-
+ros::Subscriber<std_msgs::Int16> commandSub("/crustcrawler/command", &command_callback);
 
 static float motorOffsets[5] = {-M_PI/2.0, M_PI/4.0, M_PI, M_PI * (3.0/4.0), M_PI};
 
@@ -30,7 +32,7 @@ void setup()
 {
   Serial.begin(250000);
   controler_ptr = new ProtocolController();
-  
+
   nh.getHardware()->setBaud(250000);
 
   nh.initNode();
@@ -41,7 +43,7 @@ void setup()
   angleVel_msg.data = (float*) malloc(sizeof(float) * 10);
   //set length of msg, otherwise everything will not be sent
   angleVel_msg.data_length = 10;
-  
+
   lastMessageTime = millis();
   setPWMMode();
   enableTorque(); //turn on all motors
@@ -93,6 +95,20 @@ void setTorque_callback(const std_msgs::Float64MultiArray& msg)
 
   getAngleVel_pub.publish(&angleVel_msg);
 }
+
+void command_callback(const std_msgs::Int16& msg)
+{
+  if(msg.data == 0) //stop command
+  {
+    disableTorque();
+  }
+  else if(msg.data == 1)
+  {
+    setPWMMode();
+    enableTorque();
+  }
+}
+
 
 void enableTorque()
 {
