@@ -30,7 +30,7 @@ class ProtocolController {
     //Function til at sætte motor torque.
     void setCurrentLimit(unsigned char address, short current);
     //set torque, requires current speed of joint
-    void setTorque(unsigned char address, short torque, short current_omega);
+    void setTorque(unsigned char address, float torque, float current_omega);
 
     //Set position af den pågældende motor.
     void setPos(unsigned char address, long setPosition);

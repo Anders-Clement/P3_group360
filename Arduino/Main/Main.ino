@@ -79,7 +79,7 @@ void setTorque_callback(const std_msgs::Float64MultiArray& msg)
   {
     for (int i = 1; i < 6; i++)
     {
-      controler_ptr->setTorque(i, msg.data[i], velocities[i-1]);
+      controler_ptr->setTorque(i, msg.data[i-1], velocities[i-1]);
     }
 
   }

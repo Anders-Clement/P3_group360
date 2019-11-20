@@ -242,11 +242,11 @@ long ProtocolController::getVel(unsigned char address) {
   return readFunction(address, 128, 4);
 }
 
-void ProtocolController::setTorque(unsigned char address, short torque, short current_omega)
+void ProtocolController::setTorque(unsigned char address, float torque, float current_omega)
 {
-  short C1 =  190;    //0.2152 * 885    PWM is from 0.0-1.0 in 885 steps
-  short C2 =  122;    //0.1382 * 885
-  short PWM = torque * C1 + current_omega * C2; //PWM with values from 0-885 (per protocol)
+  float C1 =  190;    //0.2152 * 885    PWM is from 0.0-1.0 in 885 steps
+  float C2 =  122;    //0.1382 * 885
+  short PWM = (short)(torque * C1 + current_omega * C2); //PWM with values from 0-885 (per protocol)
   //!!! ---   Omega must be in rads/sec, torque in Nm   --- !!! \\
 
   if (PWM > 885)
