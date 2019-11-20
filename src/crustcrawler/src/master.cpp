@@ -6,6 +6,7 @@ masterIntelligence::masterIntelligence(){
 
   trajectory_pub = n.advertise<std_msgs::Float64MultiArray>("/crustcrawler/trajectory", 10);
   joint_pub = n.advertise<sensor_msgs::JointState>("joint_states", 10);
+  vibrate_pub = n.advertise<std_msgs::UInt8>("/myo_raw/vibrate", 10);
 
   gest_str_sub = n.subscribe("/myo_raw/myo_gest_str", 10, &masterIntelligence::myo_raw_gest_str_callback, this);
   get_angle_vel = n.subscribe("/crustcrawler/getAngleVel", 10, &masterIntelligence::get_angle_vel_callback, this);
@@ -69,6 +70,8 @@ void masterIntelligence::myo_raw_gest_str_callback(const std_msgs::String::Const
     }
     modeChanged = true;
     ROS_INFO_STREAM(mode);
+    vibrate.data = 1;
+    vibrate_pub.publish(vibrate);
   }
 }
 
@@ -327,8 +330,8 @@ void masterIntelligence::checkMyo(){
               break;   
             }
           }
-          ROS_INFO_STREAM("goalang[0]: " << goalang[0]);
-          ROS_INFO_STREAM("pos[0]: " << pos[0]);
+          //ROS_INFO_STREAM("goalang[0]: " << goalang[0]);
+          //ROS_INFO_STREAM("pos[0]: " << pos[0]);
           for (size_t i = 0; i < 4; i++){ // calculates the 'a' coefficients using goal ang and vel   
               a[0][i] = pos[i];
               a[1][i] = 0.0;
@@ -391,8 +394,8 @@ void masterIntelligence::checkMyo(){
     pos[3] = 0;
   
 
-  // message declarations
-  sensor_msgs::JointState joint_state;
+
+  
 
   //update joint_state
   joint_state.header.stamp = ros::Time::now();
@@ -412,8 +415,7 @@ void masterIntelligence::checkMyo(){
   //send the joint state and transform
   joint_pub.publish(joint_state);
 
-    // message declarations
-  std_msgs::Float64MultiArray trajectories;
+
 
     // update trajectories
   for (size_t i = 0; i < 4; i++)
