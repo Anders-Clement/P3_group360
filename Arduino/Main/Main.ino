@@ -9,7 +9,6 @@
 
 void enableTorque();
 void disableTorque();
-void publishAngleVel();
 long lastMessageTime;
 
 bool protectiveStop = false;
@@ -127,16 +126,4 @@ void disableTorque()
 {
   for (int i = 1; i < 6; i++)
     controler_ptr->toggleTorque(i, false);
-}
-
-
-void publishAngleVel()
-{
-  for (int i = 0; i < 5; i++)
-  {
-    angleVel_msg.data[i * 2] = controler_ptr->getPos(i + 1);
-    angleVel_msg.data[i * 2 + 1] = controler_ptr->getVel(i + 1);
-  }
-
-  getAngleVel_pub.publish(&angleVel_msg);
 }
