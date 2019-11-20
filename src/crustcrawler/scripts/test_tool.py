@@ -60,7 +60,7 @@ class Application(tk.Frame):
         self.inputFrame.grid(column=0, row=0)
 
         labels = ["Time (sec)", "Freq (Hz)", "Multi (-)", "Offset (-)", "Joint (-)", "Joint0 (rad)"]
-        defaults = [np.pi, 1, 1, 0, 0, 6.3]
+        defaults = [np.pi, 1, 1, 0, 0, 0]
 
         self.inputBox = []
 
