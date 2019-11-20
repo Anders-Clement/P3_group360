@@ -26,6 +26,7 @@ ros::Subscriber<std_msgs::Float64MultiArray> setTorques_sub("/crustcrawler/setTo
 ros::Subscriber<std_msgs::Int16> commandSub("/crustcrawler/command", &command_callback);
 
 static float motorOffsets[5] = {-M_PI/2.0, M_PI/4.0, M_PI, M_PI * (3.0/4.0), M_PI};
+float joint0_offset = 0;
 
 void setup()
 {
@@ -75,10 +76,11 @@ void setTorque_callback(const std_msgs::Float64MultiArray& msg)
     thetas[i - 1] = (controler_ptr->getPos(i) * 0.0015336f) - motorOffsets[i-1];
     velocities[i - 1] = (float)controler_ptr->getVel(i) * 0.0229; //convert to rad/s (0.229rpm/step * 0.1(rad/sec)/rpm
   } //this for loop takes 18.3ms
+  thetas[0] -= joint0_offset;
 
   if (!protectiveStop)
   {
-    for (int i = 1; i < 6; i++)
+    for (int i = 1; i < 6; i++)float
     {
       controler_ptr->setTorque(i, msg.data[i-1], velocities[i-1]);
     }
@@ -103,6 +105,7 @@ void command_callback(const std_msgs::Int16& msg)
   }
   else if(msg.data == 1)
   {
+    joint0_offset = controler_ptr->getPos(0) * 0.0015336f;
     setPWMMode();
     enableTorque();
   }
