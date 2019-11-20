@@ -35,7 +35,7 @@ long ProtocolController::readFunction(unsigned char address, int tableAddress, i
   }
   else
   {
-    Serial.println("Failed to read!");
+    //Serial.println("Failed to read!");
     return -1;
   }
 }
@@ -74,11 +74,11 @@ bool ProtocolController::writeFunction(unsigned char address, unsigned char *dat
   unsigned char incomingBuffer[7];
 
   for (int i = 0; i < 7; i++) {
-    
+
     long startTime = millis();
     while (!Serial1.available()) {
       if (millis() > startTime + 2) {  //time-out after 2ms (happens occasionally with 1ms, but not at 2ms)
-        Serial.println("time-out on packet recieve");
+        //Serial.println("time-out on packet recieve");
         return false;
       }
     }
@@ -117,7 +117,7 @@ bool ProtocolController::writeFunction(unsigned char address, unsigned char *dat
       return true;
     }
     else
-      Serial.println("bad CRC");
+      //Serial.println("bad CRC");
 
     return false;
   } else {
@@ -130,7 +130,7 @@ bool ProtocolController::ping(unsigned char address) {
   unsigned char SendingArray[1];
   SendingArray[0] = 0x01; //Ping Commando - Uden undertøj.
   if (!writeFunction(address, SendingArray, 1)) {
-    Serial.println("Failed to ping: " + address);
+    //Serial.println("Failed to ping: " + address);
     return false;
   }
   return true;
@@ -175,14 +175,14 @@ void ProtocolController::toggleTorque(unsigned char address, bool onTrue) {
   writeFunction(address, SendingArray, 4);
 }
 
-void ProtocolController::setOperatingMode(unsigned char address, int mode) {
+void ProtocolController::setOperatingMode(unsigned char address, unsigned char mode) {
   unsigned char SendingArray[4];
   SendingArray[0] = 0x03; //Write Commando
   SendingArray[1] = 0x0B; //Field 11 - lower
   SendingArray[2] = 0x00; //Filed 11 - higher
-  SendingArray[3] = (unsigned char)mode;
+  SendingArray[3] = mode;
 
-  writeFunction(address, SendingArray, 4);
+  //Serial.println(writeFunction(address, SendingArray, 4));
 }
 
 void ProtocolController::setGoalCurrent(unsigned char address, short current) {
@@ -242,16 +242,16 @@ long ProtocolController::getVel(unsigned char address) {
   return readFunction(address, 128, 4);
 }
 
-void ProtocolController::setTorque(unsigned char address, short torque, short current_omega)
+void ProtocolController::setTorque(unsigned char address, float torque, float current_omega)
 {
-  short C1 =  190;    //0.2152 * 885    PWM is from 0.0-1.0 in 885 steps
-  short C2 =  122;    //0.1382 * 885
-  short PWM = torque * C1 + current_omega * C2; //PWM with values from 0-885 (per protocol)
+  float C1 =  190;    //0.2152 * 885    PWM is from 0.0-1.0 in 885 steps
+  float C2 =  122;    //0.1382 * 885
+  short PWM = (short)(torque * C1 + current_omega * C2); //PWM with values from 0-885 (per protocol)
   //!!! ---   Omega must be in rads/sec, torque in Nm   --- !!! \\
 
   if (PWM > 885)
   {
-    Serial.println("setTorque PWM > 885, too high torque or omega!, clamping to 885");
+    //Serial.println("setTorque PWM > 885, too high torque or omega!, clamping to 885");
     PWM = 885;
   }
 

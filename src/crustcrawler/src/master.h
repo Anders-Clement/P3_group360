@@ -31,6 +31,7 @@ public:
     float eulerAng[3];
     float old_eulerAng[3];
     bool modeChanged = true;
+    bool update_angle_vel = true;
     float macro[4][4] = {0};
     float goalang[4];
     float goalvel[4];

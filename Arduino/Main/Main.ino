@@ -17,18 +17,20 @@ ProtocolController* controler_ptr;
 //ROS specific data:
 std_msgs::Float64MultiArray angleVel_msg;
 void setTorque_callback(const std_msgs::Float64MultiArray& msg);
+void setPWMMode();
 
 ros::NodeHandle  nh;
-ros::Publisher getAngleVel_pub("getAngleVel", &angleVel_msg);
-ros::Subscriber<std_msgs::Float64MultiArray> setTorques_sub("setTorques", &setTorque_callback);
+ros::Publisher getAngleVel_pub("/crustcrawler/getAngleVel", &angleVel_msg);
+ros::Subscriber<std_msgs::Float64MultiArray> setTorques_sub("/crustcrawler/setTorques", &setTorque_callback);
 
+
+static float motorOffsets[5] = {-M_PI/2.0, M_PI/4.0, M_PI, M_PI * (3.0/4.0), M_PI};
 
 void setup()
 {
   Serial.begin(250000);
-
   controler_ptr = new ProtocolController();
-
+  
   nh.getHardware()->setBaud(250000);
 
   nh.initNode();
@@ -41,6 +43,8 @@ void setup()
   angleVel_msg.data_length = 10;
   
   lastMessageTime = millis();
+  setPWMMode();
+  enableTorque(); //turn on all motors
 }
 
 bool led = true;
@@ -48,26 +52,26 @@ bool led = true;
 void loop()
 {
   nh.spinOnce();
-  
+  /*
   if(millis() - lastMessageTime > 250) //no message received for 250ms, sound the alarm!
   {
     digitalWrite(buzz_pin, HIGH);
     disableTorque();
     delay(1000);
     digitalWrite(buzz_pin, LOW);
-  }
+  } */
 }
 
 void setTorque_callback(const std_msgs::Float64MultiArray& msg)
 {
   lastMessageTime = millis();
-  
-  long thetas[5];
+
+  float thetas[5];
   float velocities[5];
 
   for (int i = 1; i < 6; i++)
   {
-    thetas[i - 1] = controler_ptr->getPos(i);
+    thetas[i - 1] = (controler_ptr->getPos(i) * 0.0015336f) - motorOffsets[i-1];
     velocities[i - 1] = (float)controler_ptr->getVel(i) * 0.0229; //convert to rad/s (0.229rpm/step * 0.1(rad/sec)/rpm
   } //this for loop takes 18.3ms
 
@@ -75,7 +79,7 @@ void setTorque_callback(const std_msgs::Float64MultiArray& msg)
   {
     for (int i = 1; i < 6; i++)
     {
-      controler_ptr->setTorque(i, msg.data[i], velocities[i-1]);
+      controler_ptr->setTorque(i, msg.data[i-1], velocities[i-1]);
     }
 
   }
@@ -95,6 +99,12 @@ void enableTorque()
   for (int i = 1; i < 6; i++) {
     controler_ptr->toggleTorque(i, true);
   }
+}
+
+void setPWMMode()
+{
+  for(int i = 1; i < 6; i++)
+    controler_ptr->setOperatingMode(i, 0x10);
 }
 
 void disableTorque()
