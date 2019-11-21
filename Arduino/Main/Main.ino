@@ -1,12 +1,13 @@
 #include "Arduino.h"
 #include <ros.h>
-#include <std_msgs/Float64MultiArray.h>
+#include <std_msgs/Float32MultiArray.h>
 #include "Protocol_2.h"
 #include "Controller.h"
 #include <std_msgs/Int16.h>
 #include "Display.h"
 
 #define buzz_pin 48
+
 
 void enableTorque();
 void disableTorque();
@@ -15,23 +16,32 @@ long lastMessageTime;
 bool protectiveStop = false;
 ProtocolController* controler_ptr;
 PID_Controller *PID_Controller_ptr;
-Display *display_ptr;
 
-//ROS specific data:
-std_msgs::Float64MultiArray angleVel_msg;
-void trajectory_sub(const std_msgs::Float64MultiArray& incoming_msg); //subscribes to the trajectory topic
-void command_callback(const std_msgs::Int16& msg); //Gets the command topic from ROS
 void setPWMMode(); //Sets PWM mode on motors
 void publishAngVel(); //Publishes our angel and velocities to ROS
 void getPositionsVelocities();
 
+Display *display_ptr;
+
+//ROS specific data:
+std_msgs::Float32MultiArray angleVel_msg;
+void trajectory_sub(const std_msgs::Float32MultiArray& incoming_msg); //subscribes to the trajectory topic
+void command_callback(const std_msgs::Int16& msg); //Gets the command topic from ROS
+
+int freeRam ()
+{
+extern int __heap_start, *__brkval;
+int v;
+return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+}
 
 ros::NodeHandle  nh;
 ros::Publisher getAngleVel_pub("/crustcrawler/getAngleVel", &angleVel_msg);
-ros::Subscriber<std_msgs::Float64MultiArray> trajectorySubscriber("/crustcrawler/trajectory", &trajectory_sub);
+ros::Subscriber<std_msgs::Float32MultiArray> trajectorySubscriber("/crustcrawler/trajectory", &trajectory_sub);
 ros::Subscriber<std_msgs::Int16> commandSub("/crustcrawler/command", &command_callback);
 
-static float motorOffsets[5] = {0, M_PI / 4.0, M_PI, M_PI * (3.0 / 4.0), M_PI};
+
+float motorOffsets[5] = {0, M_PI / 4.0, M_PI, M_PI * (3.0 / 4.0), M_PI};
 float joint0_offset = 0;
 bool setOffset = false;
 
@@ -41,7 +51,6 @@ float velocities[5];
 
 void setup()
 {
-  //Serial.begin(250000);
   controler_ptr = new ProtocolController();
   display_ptr = new Display();
 
@@ -66,33 +75,45 @@ void setup()
   setPWMMode();
   //enableTorque(); //turn on all motors
 }
-long stoptime = 0;
+
 void loop()
 {
-  nh.spinOnce();
 
   getPositionsVelocities();
   float* torques = PID_Controller_ptr->update();
   updateTorques(torques);
 
   publishAngVel();
-  display_ptr->setLastLine("..");
-
-  /*
-    if(millis() - lastMessageTime > 250) //no message received for 250ms, sound the alarm!
-    {
-    digitalWrite(buzz_pin, HIGH);
-    disableTorque();
-    delay(1000);
-    digitalWrite(buzz_pin, LOW);
-    } */
+  
+  nh.spinOnce();
+  int freem = freeRam();
+  String fr = String(freem);
+  char* msg = (char*) malloc(sizeof(char)*16);
+  fr.toCharArray(msg,16);
+  //nh.loginfo(msg);
+  delete msg;
 }
 
-void trajectory_sub(const std_msgs::Float64MultiArray& incoming_msg)
+void trajectory_sub(const std_msgs::Float32MultiArray& incoming_msg)
 {
-  PID_Controller_ptr->trajectoryFunk(incoming_msg.data);
+  //PID_Controller_ptr->trajectoryFunk(incoming_msg.data);
   display_ptr->setLastLine("Yo");
 }
+
+void command_callback(const std_msgs::Int16& msg)
+{
+  if (msg.data == 0) //stop command
+  {
+    disableTorque();
+  }
+  else if (msg.data == 1)
+  {
+    setOffset = true;
+    setPWMMode();
+    enableTorque();
+  }
+}
+
 
 void getPositionsVelocities()
 {
@@ -129,20 +150,6 @@ void publishAngVel() {
   }
 
   getAngleVel_pub.publish(&angleVel_msg);
-}
-
-void command_callback(const std_msgs::Int16& msg)
-{
-  if (msg.data == 0) //stop command
-  {
-    disableTorque();
-  }
-  else if (msg.data == 1)
-  {
-    setOffset = true;
-    setPWMMode();
-    enableTorque();
-  }
 }
 
 

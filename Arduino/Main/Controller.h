@@ -1,5 +1,5 @@
 #include "Arduino.h"
-#include <std_msgs/Float64MultiArray.h>
+#include <std_msgs/Float32MultiArray.h>
 
 #ifndef PID_CONTROLLER_H
 #define PID_CONTROLLER_H
