@@ -15,12 +15,6 @@
 #ifndef MASTER
 #define MASTER
 
-struct Vector3{
-float x;
-float y;
-float z;
-};
-
 using namespace std;
 
 
@@ -31,19 +25,19 @@ public:
     int gesture = 0;
     ros::Time gen_time;
     ros::Time count_time;
-    float a[4][4] = {0};
+    float a[4][5] = {0};
     float eulerAng[3];
     float old_eulerAng[3];
     bool modeChanged = true;
     bool update_angle_vel = true;
     float macro[4][4] = {0};
-    float goalang[4];
-    float goalvel[4];
+    float goalang[5];
+    float goalvel[5];
     int mode = 0;
 
-    float pos[4] = {0};
-    float vel[4] = {0};
-    float ang[4] = {0};
+    float pos[5] = {0};
+    float vel[5] = {0};
+    float ang[5] = {0};
 
 
     // constucting functions
@@ -55,21 +49,21 @@ public:
 
 private:
 
-    Vector3 inv_kin_closest(Vector3 pos, Vector3 angles);
-    void check_for_zero(Vector3 &input);
-    Vector3 f_kin(Vector3 thetas);
-
     ros::NodeHandle n;
     ros::Publisher trajectory_pub;
     ros::Publisher joint_pub;
     ros::Publisher vibrate_pub;
+    ros::Publisher mode_pub;
     ros::Subscriber gest_str_sub;
     ros::Subscriber get_angle_vel;
     ros::Subscriber pose_sub;
+
     // message declarations
     std_msgs::Float64MultiArray trajectories;
     sensor_msgs::JointState joint_state;
     std_msgs::UInt8 vibrate;
+    std_msgs::UInt8 current_mode;
+
 
 };
 

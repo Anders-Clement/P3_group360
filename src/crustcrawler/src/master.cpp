@@ -7,6 +7,7 @@ masterIntelligence::masterIntelligence(){
   trajectory_pub = n.advertise<std_msgs::Float64MultiArray>("/crustcrawler/trajectory", 10);
   joint_pub = n.advertise<sensor_msgs::JointState>("joint_states", 10);
   vibrate_pub = n.advertise<std_msgs::UInt8>("/myo_raw/vibrate", 10);
+  mode_pub = n.advertise<std_msgs::UInt8>("/crustcrawler/current_mode", 10);
 
   gest_str_sub = n.subscribe("/myo_raw/myo_gest_str", 10, &masterIntelligence::myo_raw_gest_str_callback, this);
   get_angle_vel = n.subscribe("/crustcrawler/getAngleVel", 10, &masterIntelligence::get_angle_vel_callback, this);
@@ -69,6 +70,8 @@ void masterIntelligence::myo_raw_gest_str_callback(const std_msgs::String::Const
     }
     modeChanged = true;
     ROS_INFO_STREAM(mode);
+    current_mode.data = mode;
+    mode_pub.publish(current_mode);
     vibrate.data = 1;
     vibrate_pub.publish(vibrate);
   }
@@ -82,7 +85,7 @@ void masterIntelligence::get_angle_vel_callback(const std_msgs::Float64MultiArra
   if (update_angle_vel){
     update_angle_vel = false;
     int j = 0;
-    for (int i = 0; i < 10; i += 2){
+    for (int i = 0; i < 12; i += 2){
       pos[j] = data[i];
       vel[j] = data[i + 1];
       j++;
@@ -90,128 +93,13 @@ void masterIntelligence::get_angle_vel_callback(const std_msgs::Float64MultiArra
   }
 }
 
-
-/*
-void masterIntelligence::check_for_zero(Vector3 &input){
-  float zero_value = 0.0001;
-  if (input.x == 0.0)
-  {
-    input.x = zero_value;
-  }
-  if (input.y == 0.0)
-  {
-    input.y = zero_value;
-  }
-  if (input.z == 0.0)
-  {
-    input.z = zero_value;
-  }
-}
-
-Vector3 masterIntelligence::f_kin(Vector3 thetas){
-
-  Vector3 result;
-  float pi = 3.1416;
-  result.x = (11 * cos(thetas.x) * cos(thetas.y + pi / 2)) / 50 - (3 * cos(thetas.x) * sin(thetas.z) * sin(thetas.y + pi / 2)) / 20 + (3 * cos(thetas.x) * cos(thetas.z) * cos(thetas.y + pi / 2)) / 20;
-  result.y = (11 * cos(thetas.y + pi / 2) * sin(thetas.x)) / 50 + (3 * cos(thetas.z) * cos(thetas.y + pi / 2) * sin(thetas.x)) / 20 - (3 * sin(thetas.x) * sin(thetas.z) * sin(thetas.y + pi / 2)) / 20;
-  result.z = (11 * sin(thetas.y + pi / 2)) / 50 + (3 * cos(thetas.z) * sin(thetas.y + pi / 2)) / 20 + (3 * cos(thetas.y + pi / 2) * sin(thetas.z)) / 20 + 11.0 / 200.0;
-
-  return result;
-}
-
-Vector3 masterIntelligence::inv_kin_closest(Vector3 pos, Vector3 angles){
-  check_for_zero(angles);
-  check_for_zero(pos);
-
-  //constants
-  float pi = 3.14159;
-  float L2 = 0.150;
-  float L1 = 0.220;
-  float z1 = 0.055;
-
-  //extra angles and lenghs
-  float a1 = sqrt(pos.x * pos.x + pos.y * pos.y);
-  float d1 = sqrt((pos.z - z1) * (pos.z - z1) + a1 * a1);
-
-  //more angles to calculate a solution
-  float alpha = acos((d1 * d1 + L1 * L1 - L2 * L2) / (2 * L1 * d1));
-  float tmp = (L1 * L1 + L2 * L2 - d1 * d1) / (2 * L1 * L2);
-  if (tmp < -1.0)
-  {
-    if (tmp + 1.0 < -0.00001)
-    {
-      std::cout << "ACOS FAILURE, LESS THAN -1, OUT OF REACH? MAYBE?" << std::endl;
-    }
-    else
-    {
-      tmp = -1.0;
-    }
-  }
-  if (tmp > 1.0)
-  {
-    if (tmp - 1.0 > 0.00001)
-    {
-      std::cout << "ACOS FAILURE, GREATER THAN 1, OUT OF REACH? MAYBE?" << std::endl;
-    }
-    else
-    {
-      tmp = 1.0;
-    }
-  }
-
-  float beta = acos(tmp);
-  float delta = atan2((pos.z - z1), a1);
-
-  //calculate the four solutions
-  Vector3 solutions[4];
-
-  solutions[0].x = atan2(pos.y, pos.x) + pi;
-  solutions[0].y = (pi / 2) - (alpha + delta);
-  solutions[0].z = pi - beta;
-
-  solutions[1].x = atan2(pos.y, pos.x);
-  solutions[1].y = (-pi / 2) + (alpha + delta);
-  solutions[1].z = -pi + beta;
-
-  solutions[2].x = atan2(pos.y, pos.x);
-  solutions[2].y = (-pi / 2) - (alpha - delta);
-  solutions[2].z = pi - beta;
-
-  solutions[3].x = atan2(pos.y, pos.x) + pi;
-  solutions[3].y = -((-pi / 2) - (alpha - delta));
-  solutions[3].z = -pi + beta;
-
-  //find the closest solution:
-
-  float distance[4];
-
-  for (size_t i = 0; i < 4; i++)
-  {
-    distance[i] = 0;
-    distance[i] += std::abs(solutions[i].x - angles.x);
-    distance[i] += std::abs(solutions[i].y - angles.y);
-    distance[i] += std::abs(solutions[i].z - angles.z);
-  }
-
-  int lowest = 0;
-
-  for (size_t i = 0; i < 4; i++)
-  {
-    if (distance[i] < distance[lowest])
-      lowest = i;
-  }
-
-  return solutions[lowest];
-}
-*/
-
 void masterIntelligence::checkMyo(){
   if (gesture != 0 && gesture != 6){ // checking that gesture is not unknown or pinky_to_thumb because pinky to thumb changes modes
     switch (mode){ // then check what mode it is in
       case 1:{ // mode 1 controlls the first two joints with the four remaining gestures that is not rest
         switch (gesture){
           case 1:{ 
-            for (size_t i = 0; i < 4; i++){
+            for (size_t i = 0; i < 5; i++){
               vel[i] = 0.0;
             }
             break;
@@ -227,7 +115,7 @@ void masterIntelligence::checkMyo(){
           break;}
           case 4:{ 
             pos[0] += move_pose;
-            vel[0] = -move_pose*UPDATE_RATE;
+            vel[0] = move_pose*UPDATE_RATE;
             break;
           }
           case 5:{ 
@@ -239,26 +127,37 @@ void masterIntelligence::checkMyo(){
         break;
       }
       case 2:{ // mode 2 controlls the third joint and the gripper with the four remaining gestures that is not rest
+        if (modeChanged){ // if first time since mode change
+          modeChanged = false;
+          for (int i = 0; i < 3; i++){ // set roll pitch yaw to current position
+            old_eulerAng[i] = eulerAng[i];
+          }
+        }
+        // tracks the difference from current IMU position to previous
+
         switch (gesture){
           case 1:{ 
-            for (size_t i = 0; i < 4; i++){
+            for (size_t i = 0; i < 5; i++){
               vel[i] = 0.0;
             }
             break;
           }
-          case 2:{ 
-            pos[3] += move_pose;
-            vel[3] = -move_pose*UPDATE_RATE;
+          case 2:{
+            if (eulerAng[2] > old_eulerAng[2] && pos[3] < pos[4]){ // if grippers are to close and trying to get closer break
+              break;
+            }
+            pos[3] -= eulerAng[2] - old_eulerAng[2];
+            pos[4] += eulerAng[2] - old_eulerAng[2];
             break;
           }
           case 3:{
-            pos[3] -= move_pose; 
-            vel[3] = -move_pose*UPDATE_RATE;
+            pos[3] += eulerAng[2] - old_eulerAng[2];
+            pos[4] += eulerAng[2] - old_eulerAng[2];
             break;
           }
           case 4:{
             pos[2] += move_pose;
-            vel[2] = -move_pose*UPDATE_RATE;
+            vel[2] = move_pose*UPDATE_RATE;
             break;
           }
           case 5:{
@@ -267,6 +166,11 @@ void masterIntelligence::checkMyo(){
             break;
           }
         }
+
+        // sets new eulerAng to old eulerAng
+          for (int i = 0; i < 3; i++){
+            old_eulerAng[i] = eulerAng[i];
+          }
         break;
       }
       case 3:{ // mode 3 is able to set a the current joint angles macro to a gesture by holding the gesture for 2 seconds
@@ -276,9 +180,8 @@ void masterIntelligence::checkMyo(){
             count_time = ros::Time::now(); // resets counter timer
             while (gesture == 2){ // enters a while loop to be able check if the gesture is held
               if(ros::Time::now().toSec() - count_time.toSec() >= 2.0){ // if the gesture is held for 2 sec
-                for (size_t i = 0; i < 4; i++){ // set the macro to the current position for all joints
-                  //macro[0][i] = pos[i];
-                  macro[0][i] = 0.0;
+                for (size_t i = 0; i < 5; i++){ // set the macro to the current position for all joints
+                  macro[0][i] = pos[i];
                 }
                 //ROS_INFO_STREAM("macro 0 set:"); //
                 break;
@@ -290,7 +193,7 @@ void masterIntelligence::checkMyo(){
             count_time = ros::Time::now();
             while (gesture == 3){
               if(ros::Time::now().toSec() - count_time.toSec() >= 2.0){
-                for (size_t i = 0; i < 4; i++){
+                for (size_t i = 0; i < 5; i++){
                   macro[1][i] = pos[i];
                 }
                 ROS_INFO_STREAM("macro 1 set:");
@@ -304,7 +207,7 @@ void masterIntelligence::checkMyo(){
             count_time = ros::Time::now();
             while (gesture == 4){
               if(ros::Time::now().toSec() - count_time.toSec() >= 2.0){
-                for (size_t i = 0; i < 4; i++){
+                for (size_t i = 0; i < 5; i++){
                   macro[2][i] = pos[i];
                 }
                 ROS_INFO_STREAM("macro 2 set:");
@@ -318,7 +221,7 @@ void masterIntelligence::checkMyo(){
             count_time = ros::Time::now();
             while (gesture == 5){
               if(ros::Time::now().toSec() - count_time.toSec() >= 2.0){
-                for (size_t i = 0; i < 4; i++){
+                for (size_t i = 0; i < 5; i++){
                   macro[3][i] = pos[i];
                 }
                 ROS_INFO_STREAM("macro 3 set:");
@@ -335,41 +238,39 @@ void masterIntelligence::checkMyo(){
       case 4:{
         if (ros::Time::now().toSec() - gen_time.toSec() >= tf){ // to ensure this mode only updates once per tf we check the timer
           gen_time = ros::Time::now(); // resets timer
-          for (size_t i = 0; i < 4; i++){ // sets the goal position to current position
+          for (size_t i = 0; i < 5; i++){ // sets the goal position to current position
             goalang[i] = pos[i];
             goalvel[i] = 0.0;
           }
           switch (gesture){
             case 1:{ break;}
             case 2:{ // sets goal position to the corresponding macro
-              for (size_t i = 0; i < 4; i++){
+              for (size_t i = 0; i < 5; i++){
                 goalang[i] = 0.0;
               }
 
               break;
             }
             case 3:{ // sets goal position to the corresponding macro
-              for (size_t i = 0; i < 4; i++){
+              for (size_t i = 0; i < 5; i++){
                 goalang[i] = macro[1][i];
               }
               break;
             }
             case 4:{ // sets goal position to the corresponding macro
-              for (size_t i = 0; i < 4; i++){
+              for (size_t i = 0; i < 5; i++){
                 goalang[i] = macro[2][i];
               }
               break;
             }
             case 5:{ // sets goal position to the corresponding macro
-              for (size_t i = 0; i < 4; i++){
+              for (size_t i = 0; i < 5; i++){
                 goalang[i] = macro[3][i];
               }
               break;
             }
           }
-          //ROS_INFO_STREAM("goalang[0]: " << goalang[0]);
-          //ROS_INFO_STREAM("pos[0]: " << pos[0]);
-          for (size_t i = 0; i < 4; i++){ // calculates the 'a' coefficients using goal ang and vel
+          for (size_t i = 0; i < 5; i++){ // calculates the 'a' coefficients using goal ang and vel
               a[0][i] = pos[i];
               a[1][i] = 0.0;
               a[2][i] = 3.0 / (pow(tf, 2.0)) * (goalang[i] - pos[i]) - 2.0 / tf * 0.0 - 1.0 / tf * goalvel[i];
@@ -378,7 +279,7 @@ void masterIntelligence::checkMyo(){
         }
         // calculates the theta, thetadot and thetadotdot for all joints
         float t = ros::Time::now().toSec() - gen_time.toSec();
-        for (int i = 0; i < 4; i++){
+        for (int i = 0; i < 5; i++){
           pos[i] = a[0][i] + a[1][i] * t + a[2][i] * pow(t, 2.0) + a[3][i] * pow(t, 3.0);
           vel[i] = a[1][i] + 2.0 * a[2][i] * t + 3.0 * a[3][i] * pow(t, 2.0);
           ang[i] = 2.0 * a[2][i] + 6.0 * a[3][i] * t;
@@ -390,7 +291,7 @@ void masterIntelligence::checkMyo(){
       case 5:{
         if (modeChanged){ // if first time since mode change
           modeChanged = false;
-          for (int i = 0; i<3; i++){ // set roll pitch yaw to current position
+          for (int i = 0; i < 3; i++){ // set roll pitch yaw to current position
             old_eulerAng[i] = eulerAng[i];
           }
         }
@@ -399,24 +300,28 @@ void masterIntelligence::checkMyo(){
         pos[1] -= eulerAng[1] - old_eulerAng[1];
         switch (gesture){
           case 1:{ 
-            for (size_t i = 0; i < 4; i++){
+            for (size_t i = 0; i < 5; i++){
               vel[i] = 0.0;
             }
             break;
           }
           case 2:{
             pos[3] += move_pose;
-            vel[3] = -move_pose*UPDATE_RATE;
+            vel[3] = move_pose*UPDATE_RATE;
+            pos[4] -= move_pose;
+            vel[4] = move_pose*UPDATE_RATE;
             break;
           }
           case 3:{
             pos[3] -= move_pose;
             vel[3] = -move_pose*UPDATE_RATE;
+            pos[4] += move_pose;
+            vel[4] = -move_pose*UPDATE_RATE;
             break;
           }
           case 4:{
             pos[2] += move_pose;
-            vel[2] = -move_pose*UPDATE_RATE;
+            vel[2] = move_pose*UPDATE_RATE;
             break;
           }
           case 5:{
@@ -426,14 +331,13 @@ void masterIntelligence::checkMyo(){
           }
         }
         // sets new eulerAng to old eulerAng
-        for (int i = 0; i<3; i++){
+        for (int i = 0; i < 3; i++){
            old_eulerAng[i] = eulerAng[i];
         }
         break;
       }
     }
   }
-
 
 // setting the joint limits
   if (pos[1] > 3.14/2)
@@ -444,50 +348,54 @@ void masterIntelligence::checkMyo(){
     pos[2] = -3.14/2;
   else if (pos[2] > 3.14/2)
     pos[2] = 3.14/2;
-  if (pos[3] < -3.14/2)
-    pos[3] = -3.14/2;
-  else if (pos[3] > 0)
-    pos[3] = 0;
+  if (pos[3] > 3.14/2)
+    pos[3] = 3.14/2;
+  else if (pos[3] < -0.6)
+    pos[3] = -0.6;
+  if (pos[4] < -3.14/2)
+    pos[4] = -3.14/2;
+  else if (pos[4] > 0.6)
+    pos[4] = 0.6;
 
 
 
 
 
-  //update joint_state
+  // update joint_state
   joint_state.header.stamp = ros::Time::now();
   joint_state.name.clear();
-  joint_state.position.clear();
   joint_state.name.push_back("joint1");
   joint_state.name.push_back("joint2");
   joint_state.name.push_back("joint3");
   joint_state.name.push_back("joint4");
   joint_state.name.push_back("joint5");
 
+  // clear previous message
+  joint_state.position.clear();
+
+  // joint_state.position
   joint_state.position.push_back(pos[0]);
   joint_state.position.push_back(pos[1]);
   joint_state.position.push_back(pos[2]);
   joint_state.position.push_back(pos[3]);
-  joint_state.position.push_back(pos[3]);
+  joint_state.position.push_back(pos[4]);
 
-  //send the joint state and transform
+  // send the joint state and transform
   joint_pub.publish(joint_state);
 
-
+  // clear previous message
   trajectories.data.clear();
-    // update trajectories
-  for (size_t i = 0; i < 4; i++)
+
+  // update trajectories
+  for (size_t i = 0; i < 5; i++)
   {
     trajectories.data.push_back(pos[i]);
     trajectories.data.push_back(vel[i]);
     trajectories.data.push_back(ang[i]);
   }
-  trajectories.data.push_back(-pos[3]);
-  trajectories.data.push_back(-vel[3]); //add last gripper as well, since pos,vel,ang only has 4 entries
-  trajectories.data.push_back(-ang[3]); //Jonas you lazy bastard!
-  // you should really add another entry to pos,vel,ang such that the gripper also can move laterally! //
+  
   // publish trajectories
   trajectory_pub.publish(trajectories);
-
 }
 
 
