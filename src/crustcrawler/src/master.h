@@ -53,13 +53,17 @@ private:
     ros::Publisher trajectory_pub;
     ros::Publisher joint_pub;
     ros::Publisher vibrate_pub;
+    ros::Publisher mode_pub;
     ros::Subscriber gest_str_sub;
     ros::Subscriber get_angle_vel;
     ros::Subscriber pose_sub;
+
     // message declarations
     std_msgs::Float64MultiArray trajectories;
     sensor_msgs::JointState joint_state;
     std_msgs::UInt8 vibrate;
+    std_msgs::UInt8 current_mode;
+
 
 };
 

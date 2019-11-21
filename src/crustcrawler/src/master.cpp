@@ -7,6 +7,7 @@ masterIntelligence::masterIntelligence(){
   trajectory_pub = n.advertise<std_msgs::Float64MultiArray>("/crustcrawler/trajectory", 10);
   joint_pub = n.advertise<sensor_msgs::JointState>("joint_states", 10);
   vibrate_pub = n.advertise<std_msgs::UInt8>("/myo_raw/vibrate", 10);
+  mode_pub = n.advertise<std_msgs::UInt8>("/crustcrawler/current_mode", 10);
 
   gest_str_sub = n.subscribe("/myo_raw/myo_gest_str", 10, &masterIntelligence::myo_raw_gest_str_callback, this);
   get_angle_vel = n.subscribe("/crustcrawler/getAngleVel", 10, &masterIntelligence::get_angle_vel_callback, this);
@@ -69,6 +70,8 @@ void masterIntelligence::myo_raw_gest_str_callback(const std_msgs::String::Const
     }
     modeChanged = true;
     ROS_INFO_STREAM(mode);
+    current_mode.data = mode;
+    mode_pub.publish(current_mode);
     vibrate.data = 1;
     vibrate_pub.publish(vibrate);
   }
