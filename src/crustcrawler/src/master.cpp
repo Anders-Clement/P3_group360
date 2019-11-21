@@ -208,90 +208,67 @@ Vector3 masterIntelligence::inv_kin_closest(Vector3 pos, Vector3 angles){
 void masterIntelligence::checkMyo(){
   if (gesture != 0 && gesture != 6){ // checking that gesture is not unknown or pinky_to_thumb because pinky to thumb changes modes
     switch (mode){ // then check what mode it is in
-      case 1:{ 
-          for (size_t i = 0; i < 4; i++){ // sets the goal position to current position
-            goalang[i] = pos[i];
-            goalvel[i] = 0.0;
-          }
-          switch (gesture){
-            case 1:{ 
-              goalang[1] = pos[1]; 
-              goalvel[1] = 0.0;
-              goalang[0] = pos[0]; 
-              goalvel[0] = 0.0;
-            break;}
-            case 2:{ goalang[1] = pos[1] + move_pose; break;}
-            case 3:{ goalang[1] = pos[1] - move_pose; break;}
-            case 4:{ goalang[0] = pos[0] + move_pose; break;}
-            case 5:{ goalang[0] = pos[0] - move_pose; break;}
-          }
-          for (size_t i = 0; i < 4; i++){ // calculates the 'a' coefficients using goal ang and vel
-              a[0][i] = pos[i];
-              a[1][i] = 0.0;
-              a[2][i] = 3.0 / (pow(1.0/30.0, 2.0)) * (goalang[i] - pos[i]) - 2.0 / 1.0/30.0 * 0.0 - 1.0 / 1.0/30.0 * goalvel[i];
-              a[3][i] = -2.0 / (pow(1.0/30.0, 3.0)) * (goalang[i] - pos[i]) + 1.0 / (pow(1.0/30.0, 2.0)) * (goalvel[i] + 0.0);
-          }
-        // calculates the theta, thetadot and thetadotdot for all joints
-        for (int i = 0; i < 4; i++){
-          pos[i] = a[0][i] + a[1][i] * 1.0/30.0 + a[2][i] * pow(1.0/30.0, 2.0) + a[3][i] * pow(1.0/30.0, 3.0);
-          vel[i] = a[1][i] + 2.0 * a[2][i] * 1.0/30.0 + 3.0 * a[3][i] * pow(1.0/30.0, 2.0);
-          ang[i] = 2.0 * a[2][i] + 6.0 * a[3][i] * 1.0/30.0;
-        }
-      break;}
-      case 2:{ 
-          for (size_t i = 0; i < 4; i++){ // sets the goal position to current position
-            goalang[i] = pos[i];
-            goalvel[i] = 0.0;
-          }
-          switch (gesture){
-            case 1:{ 
-              goalang[3] = pos[3]; 
-              goalang[2] = pos[2]; 
-              goalvel[3] = 0.0;
-              goalvel[2] = 0.0;
-            break;}
-            case 2:{ goalang[3] = pos[3] + move_pose; break;}
-            case 3:{ goalang[3] = pos[3] - move_pose; break;}
-            case 4:{ goalang[2] = pos[2] + move_pose; break;}
-            case 5:{ goalang[2] = pos[2] - move_pose; break;}
-          }
-          for (size_t i = 0; i < 4; i++){ // calculates the 'a' coefficients using goal ang and vel
-              a[0][i] = pos[i];
-              a[1][i] = 0.0;
-              a[2][i] = 3.0 / (pow(1.0/30.0, 2.0)) * (goalang[i] - pos[i]) - 2.0 / 1.0/30.0 * 0.0 - 1.0 / 1.0/30.0 * goalvel[i];
-              a[3][i] = -2.0 / (pow(1.0/30.0, 3.0)) * (goalang[i] - pos[i]) + 1.0 / (pow(1.0/30.0, 2.0)) * (goalvel[i] + 0.0);
-          }
-        // calculates the theta, thetadot and thetadotdot for all joints
-        for (int i = 0; i < 4; i++){
-          pos[i] = a[0][i] + a[1][i] * 1.0/30.0 + a[2][i] * pow(1.0/30.0, 2.0) + a[3][i] * pow(1.0/30.0, 3.0);
-          vel[i] = a[1][i] + 2.0 * a[2][i] * 1.0/30.0 + 3.0 * a[3][i] * pow(1.0/30.0, 2.0);
-          //ang[i] = 2.0 * a[2][i] + 6.0 * a[3][i] * 1.0/30.0;
-        }
-      break;}
-
-/*
-
       case 1:{ // mode 1 controlls the first two joints with the four remaining gestures that is not rest
         switch (gesture){
-          case 1:{ break;}
-          case 2:{ pos[1] += move_pose; break;}
-          case 3:{ pos[1] -= move_pose; break;}
-          case 4:{ pos[0] += move_pose; break;}
-          case 5:{ pos[0] -= move_pose; break;}
+          case 1:{ 
+            for (size_t i = 0; i < 4; i++){
+              vel[i] = 0.0;
+            }
+            break;
+          }
+          case 2:{ 
+            pos[1] += move_pose; 
+            vel[1] = move_pose*UPDATE_RATE;
+            break; 
+          }
+          case 3:{ 
+            pos[1] -= move_pose; 
+            vel[1] = -move_pose*UPDATE_RATE;
+          break;}
+          case 4:{ 
+            pos[0] += move_pose;
+            vel[0] = -move_pose*UPDATE_RATE;
+            break;
+          }
+          case 5:{ 
+            pos[0] -= move_pose; 
+            vel[0] = -move_pose*UPDATE_RATE;
+            break;
+          }
         }
         break;
       }
       case 2:{ // mode 2 controlls the third joint and the gripper with the four remaining gestures that is not rest
         switch (gesture){
-          case 1:{ break;}
-          case 2:{ pos[3] += move_pose; break;}
-          case 3:{ pos[3] -= move_pose; break;}
-          case 4:{ pos[2] += move_pose; break;}
-          case 5:{ pos[2] -= move_pose; break;}
+          case 1:{ 
+            for (size_t i = 0; i < 4; i++){
+              vel[i] = 0.0;
+            }
+            break;
+          }
+          case 2:{ 
+            pos[3] += move_pose;
+            vel[3] = -move_pose*UPDATE_RATE;
+            break;
+          }
+          case 3:{
+            pos[3] -= move_pose; 
+            vel[3] = -move_pose*UPDATE_RATE;
+            break;
+          }
+          case 4:{
+            pos[2] += move_pose;
+            vel[2] = -move_pose*UPDATE_RATE;
+            break;
+          }
+          case 5:{
+            pos[2] -= move_pose;
+            vel[2] = -move_pose*UPDATE_RATE;
+            break;
+          }
         }
         break;
       }
-*/
       case 3:{ // mode 3 is able to set a the current joint angles macro to a gesture by holding the gesture for 2 seconds
         switch(gesture){
           case 1:{ break;} // if gesture is rest break
@@ -421,11 +398,32 @@ void masterIntelligence::checkMyo(){
         pos[0] -= eulerAng[0] - old_eulerAng[0];
         pos[1] -= eulerAng[1] - old_eulerAng[1];
         switch (gesture){
-          case 1:{ break;}
-          case 2:{ pos[3] += move_pose; break;}
-          case 3:{ pos[3] -= move_pose; break;}
-          case 4:{ pos[2] += move_pose; break;}
-          case 5:{ pos[2] -= move_pose; break;}
+          case 1:{ 
+            for (size_t i = 0; i < 4; i++){
+              vel[i] = 0.0;
+            }
+            break;
+          }
+          case 2:{
+            pos[3] += move_pose;
+            vel[3] = -move_pose*UPDATE_RATE;
+            break;
+          }
+          case 3:{
+            pos[3] -= move_pose;
+            vel[3] = -move_pose*UPDATE_RATE;
+            break;
+          }
+          case 4:{
+            pos[2] += move_pose;
+            vel[2] = -move_pose*UPDATE_RATE;
+            break;
+          }
+          case 5:{
+            pos[2] -= move_pose;
+            vel[2] = -move_pose*UPDATE_RATE;
+            break;
+          }
         }
         // sets new eulerAng to old eulerAng
         for (int i = 0; i<3; i++){
@@ -497,7 +495,7 @@ void masterIntelligence::checkMyo(){
 int main(int argc, char **argv){
   ros::init(argc, argv, "master_node");
   masterIntelligence master_node;
-  ros::Rate loop_rate(20);
+  ros::Rate loop_rate(UPDATE_RATE);
 
   while (ros::ok()){
     master_node.checkMyo();

@@ -8,6 +8,9 @@
 #include "math.h"
 #include <std_msgs/UInt8.h>
 
+#define UPDATE_RATE 20
+#define move_pose 0.02
+#define tf 2.0
 
 #ifndef MASTER
 #define MASTER
@@ -36,14 +39,12 @@ public:
     float macro[4][4] = {0};
     float goalang[4];
     float goalvel[4];
-    float tf = 2.0;
+    int mode = 0;
 
     float pos[4] = {0};
     float vel[4] = {0};
     float ang[4] = {0};
 
-    int mode = 0;
-    float move_pose = 0.02;
 
     // constucting functions
     void myo_raw_gest_str_callback(const std_msgs::String::ConstPtr& msg);
