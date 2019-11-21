@@ -209,6 +209,69 @@ Vector3 masterIntelligence::inv_kin_closest(Vector3 pos, Vector3 angles){
 void masterIntelligence::checkMyo(){
   if (gesture != 0 && gesture != 6){ // checking that gesture is not unknown or pinky_to_thumb because pinky to thumb changes modes
     switch (mode){ // then check what mode it is in
+      case 1:{ 
+          for (size_t i = 0; i < 4; i++){ // sets the goal position to current position
+            goalang[i] = pos[i];
+            goalvel[i] = 0.0;
+          }
+          switch (gesture){
+            case 1:{ 
+              goalang[1] = pos[1]; 
+              goalvel[1] = 0.0;
+              goalang[0] = pos[0]; 
+              goalvel[0] = 0.0;
+            break;}
+            case 2:{ goalang[1] = pos[1] + move_pose; break;}
+            case 3:{ goalang[1] = pos[1] - move_pose; break;}
+            case 4:{ goalang[0] = pos[0] + move_pose; break;}
+            case 5:{ goalang[0] = pos[0] - move_pose; break;}
+          }
+          for (size_t i = 0; i < 4; i++){ // calculates the 'a' coefficients using goal ang and vel
+              a[0][i] = pos[i];
+              a[1][i] = 0.0;
+              a[2][i] = 3.0 / (pow(1.0/30.0, 2.0)) * (goalang[i] - pos[i]) - 2.0 / 1.0/30.0 * 0.0 - 1.0 / 1.0/30.0 * goalvel[i];
+              a[3][i] = -2.0 / (pow(1.0/30.0, 3.0)) * (goalang[i] - pos[i]) + 1.0 / (pow(1.0/30.0, 2.0)) * (goalvel[i] + 0.0);
+          }
+        // calculates the theta, thetadot and thetadotdot for all joints
+        for (int i = 0; i < 4; i++){
+          pos[i] = a[0][i] + a[1][i] * 1.0/30.0 + a[2][i] * pow(1.0/30.0, 2.0) + a[3][i] * pow(1.0/30.0, 3.0);
+          vel[i] = a[1][i] + 2.0 * a[2][i] * 1.0/30.0 + 3.0 * a[3][i] * pow(1.0/30.0, 2.0);
+          ang[i] = 2.0 * a[2][i] + 6.0 * a[3][i] * 1.0/30.0;
+        }
+      break;}
+      case 2:{ 
+          for (size_t i = 0; i < 4; i++){ // sets the goal position to current position
+            goalang[i] = pos[i];
+            goalvel[i] = 0.0;
+          }
+          switch (gesture){
+            case 1:{ 
+              goalang[3] = pos[3]; 
+              goalang[2] = pos[2]; 
+              goalvel[3] = 0.0;
+              goalvel[2] = 0.0;
+            break;}
+            case 2:{ goalang[3] = pos[3] + move_pose; break;}
+            case 3:{ goalang[3] = pos[3] - move_pose; break;}
+            case 4:{ goalang[2] = pos[2] + move_pose; break;}
+            case 5:{ goalang[2] = pos[2] - move_pose; break;}
+          }
+          for (size_t i = 0; i < 4; i++){ // calculates the 'a' coefficients using goal ang and vel
+              a[0][i] = pos[i];
+              a[1][i] = 0.0;
+              a[2][i] = 3.0 / (pow(1.0/30.0, 2.0)) * (goalang[i] - pos[i]) - 2.0 / 1.0/30.0 * 0.0 - 1.0 / 1.0/30.0 * goalvel[i];
+              a[3][i] = -2.0 / (pow(1.0/30.0, 3.0)) * (goalang[i] - pos[i]) + 1.0 / (pow(1.0/30.0, 2.0)) * (goalvel[i] + 0.0);
+          }
+        // calculates the theta, thetadot and thetadotdot for all joints
+        for (int i = 0; i < 4; i++){
+          pos[i] = a[0][i] + a[1][i] * 1.0/30.0 + a[2][i] * pow(1.0/30.0, 2.0) + a[3][i] * pow(1.0/30.0, 3.0);
+          vel[i] = a[1][i] + 2.0 * a[2][i] * 1.0/30.0 + 3.0 * a[3][i] * pow(1.0/30.0, 2.0);
+          //ang[i] = 2.0 * a[2][i] + 6.0 * a[3][i] * 1.0/30.0;
+        }
+      break;}
+
+/*
+
       case 1:{ // mode 1 controlls the first two joints with the four remaining gestures that is not rest
         switch (gesture){ 
           case 1:{ break;}
@@ -219,7 +282,6 @@ void masterIntelligence::checkMyo(){
         }
         break;
       }
-
       case 2:{ // mode 2 controlls the third joint and the gripper with the four remaining gestures that is not rest
         switch (gesture){
           case 1:{ break;}
@@ -230,7 +292,7 @@ void masterIntelligence::checkMyo(){
         }
         break;
       }
-
+*/
       case 3:{ // mode 3 is able to set a the current joint angles macro to a gesture by holding the gesture for 2 seconds
         switch(gesture){
           case 1:{ break;} // if gesture is rest break
@@ -243,12 +305,10 @@ void masterIntelligence::checkMyo(){
                   macro[0][i] = 0.0;
                 }
                 //ROS_INFO_STREAM("macro 0 set:"); // 
-                break;
-              }
+              break;}
               ros::spinOnce();
             }
-            break;
-          }
+          break;}
           case 3:{ // same as case 2 just with gesture 3
             count_time = ros::Time::now();
             while (gesture == 3){
@@ -335,20 +395,18 @@ void masterIntelligence::checkMyo(){
           for (size_t i = 0; i < 4; i++){ // calculates the 'a' coefficients using goal ang and vel   
               a[0][i] = pos[i];
               a[1][i] = 0.0;
-              a[2][i] = 3.0 / (pow(tf, 2.0)) * (goalang[i] - pos[i]) - 2.0 / tf * 0.0 - 1.0 / tf * 0.0;
-              a[3][i] = -2.0 / (pow(tf, 3.0)) * (goalang[i] - pos[i]) + 1.0 / (pow(tf, 2.0)) * (0.0 + 0.0);
-
+              a[2][i] = 3.0 / (pow(tf, 2.0)) * (goalang[i] - pos[i]) - 2.0 / tf * 0.0 - 1.0 / tf * goalvel[i];
+              a[3][i] = -2.0 / (pow(tf, 3.0)) * (goalang[i] - pos[i]) + 1.0 / (pow(tf, 2.0)) * (goalvel[i] + 0.0);
           }
-
         }
-          // calculates the theta, thetadot and thetadotdot for all joints
-          float t = ros::Time::now().toSec() - gen_time.toSec();
-          for (int i = 0; i < 4; i++){
-            pos[i] = a[0][i] + a[1][i] * t + a[2][i] * pow(t, 2.0) + a[3][i] * pow(t, 3.0);
-            vel[i] = a[1][i] + 2.0 * a[2][i] * t + 3.0 * a[3][i] * pow(t, 2.0);
-            ang[i] = 2.0 * a[2][i] + 6.0 * a[3][i] * t;
-          }
-        break;
+        // calculates the theta, thetadot and thetadotdot for all joints
+        float t = ros::Time::now().toSec() - gen_time.toSec();
+        for (int i = 0; i < 4; i++){
+          pos[i] = a[0][i] + a[1][i] * t + a[2][i] * pow(t, 2.0) + a[3][i] * pow(t, 3.0);
+          vel[i] = a[1][i] + 2.0 * a[2][i] * t + 3.0 * a[3][i] * pow(t, 2.0);
+          ang[i] = 2.0 * a[2][i] + 6.0 * a[3][i] * t;
+        }
+      break;
       }
       
       // mode 5 can controls the first two joints using the IMU from the Myo and then the four gestures to control the 3rd joint and the gripper
