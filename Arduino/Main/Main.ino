@@ -8,7 +8,6 @@
 
 #define buzz_pin 48
 
-
 void enableTorque();
 void disableTorque();
 long lastMessageTime;
@@ -84,7 +83,7 @@ void loop()
   updateTorques(torques);
 
   publishAngVel();
-  
+
   nh.spinOnce();
   int freem = freeRam();
   String fr = String(freem);
