@@ -6,6 +6,7 @@
 #include <tf/transform_broadcaster.h>
 #include "std_msgs/Float64MultiArray.h"
 #include "math.h"
+#include <std_msgs/UInt8.h>
 
 
 #ifndef MASTER
@@ -58,12 +59,17 @@ private:
     Vector3 f_kin(Vector3 thetas);
 
     ros::NodeHandle n;
-
     ros::Publisher trajectory_pub;
     ros::Publisher joint_pub;
+    ros::Publisher vibrate_pub;
     ros::Subscriber gest_str_sub;
     ros::Subscriber get_angle_vel;
     ros::Subscriber pose_sub;
+    // message declarations
+    std_msgs::Float64MultiArray trajectories;
+    sensor_msgs::JointState joint_state;
+    std_msgs::UInt8 vibrate;
+
 };
 
 

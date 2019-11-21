@@ -1,8 +1,8 @@
 <launch>
 
-  <arg name="debug" default="false"/>
+ <!-- <arg name="debug" default="false"/>
   <arg name="port" default="/dev/ttyACM3" doc="Port used by the Myo dongle. Check it with 'ls /dev/' and look for ttyACM0 for instance. You need to provide the full path." />
-
+-->
   <include file="$(find crustcrawler_gazebo)/launch/crustcrawler.launch">
   </include> 
 
@@ -12,6 +12,8 @@
   <node pkg="ros_myo" name="myo_raw" type="myo-rawNode.py" args="$(arg port)" output="screen"/>
 
   <node pkg="crustcrawler" name="master" type="master" output="screen"/>
+
+  <node pkg="crustcrawler_controller" name="crustcrawler_controller_node" type="crustcrawler_controller_node"/>
 
 
 </launch>
