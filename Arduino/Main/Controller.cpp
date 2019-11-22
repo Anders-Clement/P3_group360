@@ -7,14 +7,14 @@ PID_Controller::PID_Controller(float* positionArray, float* velocityArray)
     velRobot = velocityArray;
 }
 //gets the robots desired pos,vel,acc for diffrernt joints and puts into 3 different arrays.
-void PID_Controller::trajectoryFunk(float* trajectoryAngles_incomming)
+void PID_Controller::trajectoryFunk(int* trajectoryAngles_incomming)
 {
   for (int i = 0; i < 5; i++)
   {
     int dataindex = i * 3;
-    posDesired[i] = trajectoryAngles_incomming[dataindex];
-    velDesired[i] = trajectoryAngles_incomming[dataindex + 1];
-    accDesired[i] = trajectoryAngles_incomming[dataindex + 2];
+    posDesired[i] = (float)trajectoryAngles_incomming[dataindex] /1000.0;
+    velDesired[i] = (float)trajectoryAngles_incomming[dataindex + 1] /1000.0;
+    accDesired[i] = (float)trajectoryAngles_incomming[dataindex + 2] /1000.0;
   }
 }
 // calculates error of desired - actual position
