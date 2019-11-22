@@ -28,9 +28,8 @@ class PID_Controller {
     float errorSum[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
 
 public:
-
     PID_Controller(float* positionArray, float* velocityArray);
-    void trajectoryFunk(float* trajectoryAngles_incomming);
+    void trajectoryFunk(int* trajectoryAngles_incomming);
     float *getErrorPos();
     float *getErrorVel();
     void addError();
