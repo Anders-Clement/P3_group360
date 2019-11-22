@@ -6,11 +6,12 @@
 #include <tf/transform_broadcaster.h>
 #include "std_msgs/Float64MultiArray.h"
 #include "std_msgs/Int16MultiArray.h"
-#include "math.h"
+#include "std_msgs/Int16.h"
 #include <std_msgs/UInt8.h>
+#include "math.h"
 
 #define UPDATE_RATE 5
-#define move_pose 0.02
+#define move_pose 0.05
 #define tf 2.0
 
 #ifndef MASTER
@@ -63,7 +64,7 @@ private:
     std_msgs::Int16MultiArray trajectories;
     sensor_msgs::JointState joint_state;
     std_msgs::UInt8 vibrate;
-    std_msgs::UInt8 current_mode;
+    std_msgs::Int16 current_mode;
 
 
 };

@@ -7,7 +7,7 @@ masterIntelligence::masterIntelligence(){
   trajectory_pub = n.advertise<std_msgs::Int16MultiArray>("/crustcrawler/trajectory", 10);
   joint_pub = n.advertise<sensor_msgs::JointState>("joint_states", 10);
   vibrate_pub = n.advertise<std_msgs::UInt8>("/myo_raw/vibrate", 10);
-  mode_pub = n.advertise<std_msgs::UInt8>("/crustcrawler/current_mode", 10);
+  mode_pub = n.advertise<std_msgs::Int16>("/crustcrawler/mode", 10);
 
   gest_str_sub = n.subscribe("/myo_raw/myo_gest_str", 10, &masterIntelligence::myo_raw_gest_str_callback, this);
   get_angle_vel = n.subscribe("/crustcrawler/getAngleVel", 10, &masterIntelligence::get_angle_vel_callback, this);
@@ -63,7 +63,7 @@ void masterIntelligence::myo_raw_gest_str_callback(const std_msgs::String::Const
   }
   // if the gesture held is "THUMB_TO_PINKY" then change mode from 1 to 5 and then reset to 1
   if (gesture == 6){
-    if (mode == 5)
+    if (mode == 4)
       mode = 1;
     else{
       mode += 1;
@@ -149,16 +149,27 @@ void masterIntelligence::checkMyo(){
             break;
           }
           case 2:{
-            if (eulerAng[2] > old_eulerAng[2] && pos[3] < pos[4]){ // if grippers are to close and trying to get closer break
+            /* fance gripper mode if (eulerAng[2] > old_eulerAng[2] && pos[3] < pos[4]){ // if grippers are to close and trying to get closer break
               break;
             }
             pos[3] -= eulerAng[2] - old_eulerAng[2];
             pos[4] += eulerAng[2] - old_eulerAng[2];
+            */
+            pos[3] += move_pose;
+            vel[3] = move_pose*UPDATE_RATE;
+            pos[4] -= move_pose;
+            vel[4] = -move_pose*UPDATE_RATE;
             break;
           }
           case 3:{
+            /* fancy gripper mode
             pos[3] += eulerAng[2] - old_eulerAng[2];
             pos[4] += eulerAng[2] - old_eulerAng[2];
+            */
+            pos[3] -= move_pose;
+            vel[3] = -move_pose*UPDATE_RATE;
+            pos[4] += move_pose;
+            vel[4] = move_pose*UPDATE_RATE;
             break;
           }
           case 4:{
@@ -346,10 +357,10 @@ void masterIntelligence::checkMyo(){
   }
 
 // setting the joint limits
-  if (pos[1] > 3.14/2)
-    pos[1] = 3.14/2;
-  else if (pos[1] < -3.14/2)
-    pos[1] = -3.14/2;
+  if (pos[1] > 1.9)
+    pos[1] = 1.9;
+  else if (pos[1] < -1.9)
+    pos[1] = -1.9;
   if (pos[2] < -3.14/2)
     pos[2] = -3.14/2;
   else if (pos[2] > 3.14/2)
