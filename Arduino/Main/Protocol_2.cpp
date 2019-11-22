@@ -244,23 +244,23 @@ long ProtocolController::getVel(unsigned char address) {
 
 void ProtocolController::setTorque(unsigned char address, float torque, float current_omega)
 {
-  float C1 =  190;    //0.2152 * 885    PWM is from 0.0-1.0 in 885 steps
+  float C1 =  190;    //0.2152 * 885    PWM_value is from 0.0-1.0 in 885 steps
   float C2 =  122;    //0.1382 * 885
-  short PWM = (short)(torque * C1 + current_omega * C2); //PWM with values from 0-885 (per protocol)
+  int PWM_value = (torque * C1 + current_omega * C2); //PWM_value with values from 0-885 (per protocol)
   //!!! ---   Omega must be in rads/sec, torque in Nm   --- !!! \\
 
-  if (PWM > 885)
+  if (PWM_value > 885)
   {
-    //Serial.println("setTorque PWM > 885, too high torque or omega!, clamping to 885");
-    PWM = 885;
+    //Serial.println("setTorque PWM_value > 885, too high torque or omega!, clamping to 885");
+    PWM_value = 885;
   }
 
   unsigned char SendingArray[5];
   SendingArray[0] = 0x03; //Write Commando
   SendingArray[1] = 0x64; //mem address (address 100)
   SendingArray[2] = 0x00;
-  SendingArray[3] = PWM & 0x00FF;
-  SendingArray[4] = (PWM >> 8) & 0x00FF;
+  SendingArray[3] = PWM_value & 0x00FF;
+  SendingArray[4] = (PWM_value >> 8) & 0x00FF;
 
   writeFunction(address, SendingArray, 5);
 }

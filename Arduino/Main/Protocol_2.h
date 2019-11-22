@@ -40,7 +40,7 @@ class ProtocolController {
     long getVel(unsigned char address);
 
     //Set position PGain
-    void ProtocolController::setPosPGain(unsigned char addres, int pGain);
+    void setPosPGain(unsigned char addres, int pGain);
 
 
 
