@@ -8,36 +8,30 @@
 
 #define buzz_pin 48
 
-void enableTorque();
-void disableTorque();
-long lastMessageTime;
 
-bool protectiveStop = false;
 ProtocolController* controler_ptr;
 PID_Controller *PID_Controller_ptr;
+Display *display_ptr;   //Display controller
 
 void setPWMMode(); //Sets PWM mode on motors
 void publishAngVel(); //Publishes our angel and velocities to ROS
-void getPositionsVelocities();
+void getPositionsVelocities(); //gets positions and velocities from all motors
+void enableTorque(); //on all motors
+void disableTorque(); //on all motors
+void updateTorques(float* torqueArray); //sets torques on all motors
 
-Display *display_ptr;
 
 //ROS specific data:
 std_msgs::Int16MultiArray angleVel_msg;
 void trajectory_sub(const std_msgs::Int16MultiArray& incoming_msg); //subscribes to the trajectory topic
 void command_callback(const std_msgs::Int16& msg); //Gets the command topic from ROS
-
-int freeRam ()
-{
-extern int __heap_start, *__brkval;
-int v;
-return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
-}
+void mode_callback(const std_msgs::Int16& msg); //Gets the mode topic from ROS
 
 ros::NodeHandle  nh;
 ros::Publisher getAngleVel_pub("/crustcrawler/getAngleVel", &angleVel_msg);
 ros::Subscriber<std_msgs::Int16MultiArray> trajectorySubscriber("/crustcrawler/trajectory", &trajectory_sub);
 ros::Subscriber<std_msgs::Int16> commandSub("/crustcrawler/command", &command_callback);
+ros::Subscriber<std_msgs::Int16> modeSub("/crustcrawler/mode", &mode_callback);
 
 
 float motorOffsets[5] = {0, M_PI / 4.0, M_PI, M_PI * (3.0 / 4.0), M_PI};
@@ -49,93 +43,77 @@ bool rosConnected = false;
 float thetas[5];
 float velocities[5];
 
+int freeRam()  //only used for testing, don't worry about it
+{
+extern int __heap_start, *__brkval;
+int v;
+return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+}
+
+
 void setup()
 {
   controler_ptr = new ProtocolController();
   display_ptr = new Display();
-  //Serial.begin(57600);
-  //Serial.println("Setup");
   display_ptr->setStatus("Setup");
+  display_ptr->setMode("0: WFI");
+  PID_Controller_ptr = new PID_Controller(thetas, velocities);
 
 
   nh.getHardware()->setBaud(57600);
-
   nh.initNode();
   nh.advertise(getAngleVel_pub);
   nh.subscribe(trajectorySubscriber);
   nh.subscribe(commandSub);
+  nh.subscribe(modeSub);
 
   delay(1000);
   display_ptr->setConnect("False"); //connected with PC (usually has not happened yet)
 
 
-  //allocate memory for anglevel message
+  //allocate memory for angleVel message
   angleVel_msg.data = (int*) malloc(sizeof(int) * 10);
   //set length of msg, otherwise everything will not be sent
   angleVel_msg.data_length = 10;
 
-  float temp_zeros[5] = {0, 0, 0, 0, 0};
-  updateTorques(temp_zeros);
+  display_ptr->setStatus("Boot Act");
+  bool init = false;
+  while(!init)
+  {
+    init = true;
+    for(int i = 1; i < 6; i++)
+      if(!controler_ptr->ping(i))
+        init = false;
+  }
+  setPWMMode(); //set motors to pwm mode
+  setOffset = true;
+  getPositionsVelocities();
 
-
-
-  PID_Controller_ptr = new PID_Controller(thetas, velocities);
-
-
-  int trajectory[15] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-  PID_Controller_ptr->trajectoryFunk(trajectory);
+  int tmp_trajectory[15] = {thetas[0]*1000.0, 0,0, thetas[1]*1000.0, 0,0,thetas[2]*1000.0, 0,0,thetas[3]*1000.0, 0,0,thetas[4]*1000.0, 0,0,};
+  PID_Controller_ptr->trajectoryFunk(tmp_trajectory); //saves the trajectory
 
   /*
-  lastMessageTime = millis();
-
-  Serial.print("trajectory: ");
-  for(int i = 0; i < 5; i++)
-  {
-    Serial.print(PID_Controller_ptr->posDesired[i]);
-    Serial.print(", ");
-  }
-  Serial.println("");
-  Serial.println("Getting posVels");
-  getPositionsVelocities();
-  float* torques = PID_Controller_ptr->update();
-  Serial.print("Torques: ");
-  for(int i = 0; i < 5; i++)
-  {
-    Serial.print(torques[i]);
-    Serial.print(", ");
-  }
+  float temp_zeros[5] = {0, 0, 0, 0, 0}; //set initial torque to 0
+  updateTorques(temp_zeros); //send 0 torque to motors
   */
-  setPWMMode();
-  //enableTorque(); //turn on all motors
+  float* torques = PID_Controller_ptr->update();  //calculate our tf torques with the controller
+  enableTorque();
+  updateTorques(torques); //send the torques to our motors
 
-  display_ptr->setStatus("Running");
+  display_ptr->setStatus("Running"); //good to go!
 }
 
 void loop()
 {
 
-  getPositionsVelocities();
-  float* torques = PID_Controller_ptr->update();
-  updateTorques(torques);
+  getPositionsVelocities();  //update data from motors
+  float* torques = PID_Controller_ptr->update();  //calculate our torques with the controller
+  updateTorques(torques); //send the torques to our motors
 
-  publishAngVel();
+  publishAngVel(); //publish to ros angles and velocities
+  nh.spinOnce(); //process callback queue
 
-
-  nh.spinOnce();
-  /*
-  int freem = freeRam();
-  String fr = String(freem);
-  char* msg = (char*) malloc(sizeof(char)*16);
-  fr.toCharArray(msg,16);
-  //nh.loginfo(msg);
-  
-  Serial.print(counter);
-  Serial.print(", ");
-  Serial.println(fr);
-
-  delete msg;
-  */
-  //Check if connected to ros, and keep the status printed on the screen
+  //Check if connected to ROS, and keep the status printed on the screen
   if(rosConnected == false)
   {
     if(nh.connected())
@@ -146,31 +124,57 @@ void loop()
     else
       display_ptr->setConnect("False");
   }
-  if(!nh.connected())
+  if(!nh.connected()) //check if disconnected from ROS
     rosConnected = false;
 }
 
 void trajectory_sub(const std_msgs::Int16MultiArray& incoming_msg)
 {
-  PID_Controller_ptr->trajectoryFunk(incoming_msg.data);
+  PID_Controller_ptr->trajectoryFunk(incoming_msg.data); //saves the trajectory
 }
 
 void command_callback(const std_msgs::Int16& msg)
 {
   if (msg.data == 0) //stop command
   {
-    display_ptr->setLastLine("command");
+    display_ptr->setLastLine("Stopped");
     disableTorque();
   }
-  else if (msg.data == 1)
+  else if (msg.data == 1) // start command
   {
     setOffset = true;
+    display_ptr->setLastLine("Started");
+    PID_Controller_ptr->resetErrorSum();
     setPWMMode();
     enableTorque();
   }
-  else if(msg.data == 2)
-    display_ptr->setLastLine("two");
+  else if (msg.data == 2) // start command
+  {
+    setOffset = true;
+    display_ptr->setLastLine("Started");
+    PID_Controller_ptr->resetErrorSum();
+  }
+}
 
+void mode_callback(const std_msgs::Int16& msg)
+{
+  switch (msg.data) {
+    case 1:
+      display_ptr->setMode("1: Bas.Sho.");
+    break;
+    case 2:
+      display_ptr->setMode("2: Elb.Grp.");
+    break;
+    case 3:
+      display_ptr->setMode("3: Set Mac.");
+    break;
+    case 4:
+      display_ptr->setMode("4: Use Mac.");
+    break;
+    case 5:
+      display_ptr->setMode("5: IMU");
+    break;
+  }
 }
 
 
@@ -191,12 +195,9 @@ void getPositionsVelocities()
 
 void updateTorques(float* torqueArray)
 {
-  if (!protectiveStop)
+  for (int i = 1; i < 6; i++)
   {
-    for (int i = 1; i < 6; i++)
-    {
-      controler_ptr->setTorque(i, torqueArray[i - 1], velocities[i - 1]);
-    }
+    controler_ptr->setTorque(i, torqueArray[i - 1], velocities[i - 1]);
   }
 }
 
@@ -204,7 +205,7 @@ void publishAngVel() {
   //publish thetas and velocities:
   for (int i = 0; i < 5; i++)
   {
-    angleVel_msg.data[i * 2] = thetas[i]*1000.0;
+    angleVel_msg.data[i * 2] = thetas[i]*1000.0;      //factor 1000 because we send data as ints instead of floats
     angleVel_msg.data[i * 2 + 1] = velocities[i]*1000.0;
   }
 
