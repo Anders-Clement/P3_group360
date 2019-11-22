@@ -10,7 +10,7 @@
 
 #include "ros/ros.h"
 #include <iostream>
-#include "std_msgs/String.h"
+#include "std_msgs/Float32MultiArray.h"
 #include "std_msgs/Int16.h"
 
 
@@ -20,33 +20,31 @@ void arduino_callback(const std_msgs::Int16::ConstPtr& msg)
   std::cout << msg->data << std::endl;
 }
 
+void trajectory_callback(const std_msgs::Float32MultiArray::ConstPtr& msg);
+
+
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "arduino_serial");
   ros::NodeHandle n;
 
-  std_msgs::Int16 msg;
-
-  ros::Subscriber serial_sub = n.subscribe("getAngleVel", 10, arduino_callback);
-  ros::Publisher serial_pub = n.advertise<std_msgs::Int16>("pc_to_arduino", 10);
+  ros::Publisher serial_sub = n.advertise<std_msgs::Float32MultiArray>("/crustcrawler/getAngleVel", 1);
+  ros::Subscriber serial_pub = n.subscribe("/crustcrawler/trajectory", 1, &trajectory_callback);
 
 
-  ros::Rate loop_rate(1);
-  int led = 1;
+  ros::Rate loop_rate(100);
   while(ros::ok())
   {
-    if(led == 1)
-      led = 0;
-    else
-      led = 1;
 
-    msg.data = led;
-
-    serial_pub.publish(msg);
 
     ros::spinOnce();
     loop_rate.sleep();
   }
 
   return 0;
+}
+
+void trajectory_callback(const std_msgs::Float32MultiArray::ConstPtr& msg)
+{
+  
 }

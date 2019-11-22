@@ -4,7 +4,7 @@ using namespace std;
 
 masterIntelligence::masterIntelligence(){
 
-  trajectory_pub = n.advertise<std_msgs::Float64MultiArray>("/crustcrawler/trajectory", 10);
+  trajectory_pub = n.advertise<std_msgs::Int16MultiArray>("/crustcrawler/trajectory", 10);
   joint_pub = n.advertise<sensor_msgs::JointState>("joint_states", 10);
   vibrate_pub = n.advertise<std_msgs::UInt8>("/myo_raw/vibrate", 10);
   mode_pub = n.advertise<std_msgs::UInt8>("/crustcrawler/current_mode", 10);
@@ -78,8 +78,14 @@ void masterIntelligence::myo_raw_gest_str_callback(const std_msgs::String::Const
 }
 
 //Takes the current joint angles and velocities
-void masterIntelligence::get_angle_vel_callback(const std_msgs::Float64MultiArray::ConstPtr &msg){
-  vector<double> data = msg->data;
+void masterIntelligence::get_angle_vel_callback(const std_msgs::Int16MultiArray::ConstPtr &msg){
+  vector<short int> data_int = msg->data;
+  vector<double> data;
+  data.resize(data_int.size());
+
+  for(int i = 0; i < data_int.size(); i++)
+    data[i] = data_int[i] /1000.0;
+
 
   // takes the current pos and vel and divides them into 2 different vectors
   if (update_angle_vel){
@@ -98,28 +104,28 @@ void masterIntelligence::checkMyo(){
     switch (mode){ // then check what mode it is in
       case 1:{ // mode 1 controlls the first two joints with the four remaining gestures that is not rest
         switch (gesture){
-          case 1:{ 
+          case 1:{
             for (size_t i = 0; i < 5; i++){
               vel[i] = 0.0;
             }
             break;
           }
-          case 2:{ 
-            pos[1] += move_pose; 
+          case 2:{
+            pos[1] += move_pose;
             vel[1] = move_pose*UPDATE_RATE;
-            break; 
+            break;
           }
-          case 3:{ 
-            pos[1] -= move_pose; 
+          case 3:{
+            pos[1] -= move_pose;
             vel[1] = -move_pose*UPDATE_RATE;
           break;}
-          case 4:{ 
+          case 4:{
             pos[0] += move_pose;
             vel[0] = move_pose*UPDATE_RATE;
             break;
           }
-          case 5:{ 
-            pos[0] -= move_pose; 
+          case 5:{
+            pos[0] -= move_pose;
             vel[0] = -move_pose*UPDATE_RATE;
             break;
           }
@@ -136,7 +142,7 @@ void masterIntelligence::checkMyo(){
         // tracks the difference from current IMU position to previous
 
         switch (gesture){
-          case 1:{ 
+          case 1:{
             for (size_t i = 0; i < 5; i++){
               vel[i] = 0.0;
             }
@@ -299,7 +305,7 @@ void masterIntelligence::checkMyo(){
         pos[0] -= eulerAng[0] - old_eulerAng[0];
         pos[1] -= eulerAng[1] - old_eulerAng[1];
         switch (gesture){
-          case 1:{ 
+          case 1:{
             for (size_t i = 0; i < 5; i++){
               vel[i] = 0.0;
             }
@@ -389,11 +395,11 @@ void masterIntelligence::checkMyo(){
   // update trajectories
   for (size_t i = 0; i < 5; i++)
   {
-    trajectories.data.push_back(pos[i]);
-    trajectories.data.push_back(vel[i]);
-    trajectories.data.push_back(ang[i]);
+    trajectories.data.push_back((int16_t)(pos[i]*1000));
+    trajectories.data.push_back((int16_t)(vel[i]*1000));
+    trajectories.data.push_back((int16_t)(ang[i]*1000));
   }
-  
+
   // publish trajectories
   trajectory_pub.publish(trajectories);
 }
