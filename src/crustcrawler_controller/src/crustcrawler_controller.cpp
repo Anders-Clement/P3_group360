@@ -12,12 +12,12 @@ float posDesired[5];
 float velDesired[5];
 float accDesired[5];
 
-float kp[5] = {5.0, 10.0, 11.0, 25.0, 15.0};
+float kp[5] = {5.0, 10.0, 11.0, 25.0, 25.0};
 float kv[5] = {0.0, 2.0, 4.4, 0.0, 0.0};
 float ki[5] = {0.0, 0.2, 0.2, 0.0, 0.0};
 float errorSum[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
 float clampOff[5] = {1.0, 1.0, 1.0, 1.0, 1.0};
-//float limit_multiply[5] = {1.0, 1.0, 1.0, 1.0, 1.0};
+float limit_multiply[5] = {1.0, 1.0, 1.0, 1.0, 1.0};
 
 //gets the robots current angeles/velocities and puts into 2 arrays.
 void angleFunk(const std_msgs::Float64MultiArray &robotAngles_incomming)
@@ -72,10 +72,8 @@ void addError()
 
   for (int i = 0; i < 5; i++)
   {
-    errorSum[i] = errorSum[i]; //+ posError[i]*limit_multiply[i];
-    
+    errorSum[i] = errorSum[i] + posError[i] * limit_multiply[i];
   }
-  
 }
 
 //calculates the torque of the 3 differnt joints and puts it into a vector
@@ -104,11 +102,7 @@ float *calculateTorque()
   for (int i = 0; i < 5; i++)
   {
     tmark[i] = kp[i] * posError[i] + kv[i] * velError[i] + ki[i] * errorSum[i] * clampOff[i] + accDesired[i];
-    
   }
-
-  //tmark[3] = kp[3] * posError[3] + accDesired[3];
-  //tmark[4] = kp[4] * posError[4] + accDesired[4];
 
   //calculates the dynamic part
   float H11, H12, H13, H21, H22, H23, H31, H32, H33, VG1, VG2, VG3;
@@ -155,8 +149,6 @@ float *calculateTorque()
   // calmping part
   float limit_upper[5] = {3.0, 4.0, 3.0, 2.0, 2.0};
   float limit_lower[5] = {-3.0, -4.0, -3.0, -2.0, -2.0};
-  //float limit_upper[5] = {3.0, 4.0, 3.0, 2.0, 2.0};
-  //float limit_lower[5] = {-3.0, -4.0, -3.0, -2.0, -2.0};
   static float output[5];
   bool limit_bool[5];
   bool sign_bool[5];
@@ -174,20 +166,20 @@ float *calculateTorque()
     {
       output[i] = limit_upper[i];
       limit_bool[i] = true;
-      //limit_multiply[i]= 0.0;
+      limit_multiply[i]= 0.0;
     }
-  else if(tau[i] < limit_lower[i])
+    else if (tau[i] < limit_lower[i])
     {
       output[i] = limit_lower[i];
       limit_bool[i] = true;
-     // limit_multiply[i]= 0.0;
+      limit_multiply[i]= 0.0;
     }
     else
     {
       limit_bool[i] = false;
-     // limit_multiply[i]= 1.0;
+      limit_multiply[i]= 1.0;
     }
-  
+
     if (posError[i] >= 0 && output[i] >= 0 || posError[i] < 0 && output < 0)
     {
       sign_bool[i] = true;
