@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import rospy
-from std_msgs.msg import Float64MultiArray
+from std_msgs.msg import Int16MultiArray
 
 import tkinter as tk
 
@@ -33,8 +33,8 @@ class Application(tk.Frame):
         self.robotCapturing = False
         self.plotUpdate = False
 
-        rospy.Subscriber("/crustcrawler/getAngleVel", Float64MultiArray, self.trajectoryCallback)
-        self.trajPub = rospy.Publisher('/crustcrawler/trajectory', Float64MultiArray)
+        rospy.Subscriber("/crustcrawler/getAngleVel", Int16MultiArray, self.trajectoryCallback)
+        self.trajPub = rospy.Publisher('/crustcrawler/trajectory', Int16MultiArray)
         rospy.Timer(rospy.Duration(1.0/20.0), self.trajectoryUpdate)
 
     def create_widgets(self):
@@ -60,7 +60,7 @@ class Application(tk.Frame):
         self.inputFrame.grid(column=0, row=0)
 
         labels = ["Time (sec)", "Freq (Hz)", "Multi (-)", "Offset (-)", "Joint (-)", "Joint0 (rad)"]
-        defaults = [np.pi, 1, 1, 0, 0, 0]
+        defaults = [10, 0.1, -0.5, 0, 3, 0]
 
         self.inputBox = []
 
@@ -134,13 +134,13 @@ class Application(tk.Frame):
     def trajectoryCallback(self, inputData):
         if (self.robotCapturing):
             self.robotPos[0].append(rospy.get_rostime().to_sec())
-            self.robotPos[1].append(inputData.data[self.jointSelected*2])
+            self.robotPos[1].append(inputData.data[self.jointSelected*2]/1000.0)
 
     def trajectoryUpdate(self, event):
         if self.robotCapturing == False:
             return
 
-        data = Float64MultiArray()
+        data = Int16MultiArray()
         data.data = [0]*15
 
         if (self.robotCapturing):
@@ -155,7 +155,7 @@ class Application(tk.Frame):
             self.robotSetPos[self.jointSelected] = self.Y[YIndex]
 
         for i in range(0, 5):
-            data.data[i*3] = self.robotSetPos[i]
+            data.data[i*3] = int(self.robotSetPos[i] * 1000.0)
 
         self.trajPub.publish(data)
 
@@ -173,7 +173,7 @@ class Application(tk.Frame):
             self.robotPos[0][i] = self.robotPos[0][i] - self.robotCaptureStartTime
 
         self.plotUpdate = True
-        self.statusLabel["text"] = "Status: Capture completed."
+        #self.statusLabel["text"] = "Status: Capture completed."
 
     def updater(self):
         if (self.plotUpdate):

@@ -38,6 +38,7 @@ float motorOffsets[5] = {0, M_PI / 4.0, M_PI, M_PI * (3.0 / 4.0), M_PI};
 float joint0_offset = 0;
 bool setOffset = false;
 bool rosConnected = false;
+unsigned char checkTimer = 0;
 
 //PID Controller
 float thetas[5];
@@ -105,7 +106,6 @@ void setup()
 
 void loop()
 {
-
   getPositionsVelocities();  //update data from motors
   float* torques = PID_Controller_ptr->update();  //calculate our torques with the controller
   updateTorques(torques); //send the torques to our motors
@@ -124,8 +124,13 @@ void loop()
     else
       display_ptr->setConnect("False");
   }
-  if(!nh.connected()) //check if disconnected from ROS
-    rosConnected = false;
+  else if (checkTimer > 200) {
+    if(!nh.connected()) //check if disconnected from ROS
+      rosConnected = false;
+
+    checkTimer = 0;
+  }
+  checkTimer++;
 }
 
 void trajectory_sub(const std_msgs::Int16MultiArray& incoming_msg)

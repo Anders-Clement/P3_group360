@@ -122,8 +122,8 @@ float* PID_Controller::calculateTorque()
   tau[4] = tmark[4] * 0.0004618954*100;
 
   // clamping part
-  float limit_upper[5] = {1.0, 2.0,1.0,0.7,0.7};//OG: {3.0, 4.0, 3.0, 2.0, 2.0};
-  float limit_lower[5] = {-1.0,-2.0,-1.0,-0.7,-0.7};//OG: {-3.0, -4.0, -3.0, -2.0, -2.0};
+  const float limit_upper[5] = {1.0, 2.0,1.0,100,100};//OG: {3.0, 4.0, 3.0, 2.0, 2.0};
+  const float limit_lower[5] = {-1.0,-2.0,-1.0,-100.0,-100.0};//OG: {-3.0, -4.0, -3.0, -2.0, -2.0};
   static float output[5];
   bool limit_bool[5];
   bool sign_bool[5];
