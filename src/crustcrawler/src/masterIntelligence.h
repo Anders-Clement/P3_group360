@@ -23,8 +23,6 @@ public:
     ros::Time gen_time;
     ros::Time count_time;
     float a[4][5] = {0};
-    float eulerAng[3];
-    float old_eulerAng[3];
     bool update_angle_vel = true;
     float macro[4][4] = {0};
     float goalang[5];
@@ -53,6 +51,7 @@ private:
     ros::Publisher joint_pub;
     ros::Publisher vibrate_pub;
     ros::Publisher mode_pub;
+    ros::Publisher gesture_pub;
     ros::Subscriber gest_str_sub;
     ros::Subscriber get_angle_vel;
     ros::Subscriber joy_sub;
@@ -62,6 +61,8 @@ private:
     sensor_msgs::JointState joint_state;
     std_msgs::UInt8 vibrate;
     std_msgs::Int16 current_mode;
+    std_msgs::Int16 current_gesture;
+
 };
 
 
