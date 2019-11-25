@@ -47,7 +47,7 @@ public:
     void get_angle_vel_callback(const std_msgs::Int16MultiArray::ConstPtr& msg);
     void myo_raw_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& msg);
 
-    void checkMyo();
+    void handleGesture();
 
 private:
 

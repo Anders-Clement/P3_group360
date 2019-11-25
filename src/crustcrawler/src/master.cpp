@@ -99,7 +99,7 @@ void masterIntelligence::get_angle_vel_callback(const std_msgs::Int16MultiArray:
   }
 }
 
-void masterIntelligence::checkMyo(){
+void masterIntelligence::handleGesture(){
   if (gesture != 0 && gesture != 6){ // checking that gesture is not unknown or pinky_to_thumb because pinky to thumb changes modes
     switch (mode){ // then check what mode it is in
       case 1:{ // mode 1 controlls the first two joints with the four remaining gestures that is not rest
@@ -423,7 +423,7 @@ int main(int argc, char **argv){
   ros::Rate loop_rate(UPDATE_RATE);
 
   while (ros::ok()){
-    master_node.checkMyo();
+    master_node.handleGesture();
 
     ros::spinOnce();
     loop_rate.sleep();
