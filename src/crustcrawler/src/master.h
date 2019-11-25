@@ -42,7 +42,7 @@ public:
     void myo_raw_gest_str_callback(const std_msgs::String::ConstPtr& msg);
     void get_angle_vel_callback(const std_msgs::Int16MultiArray::ConstPtr& msg);
 
-    void checkMyo();
+    void handleGesture();
 
 private:
 
