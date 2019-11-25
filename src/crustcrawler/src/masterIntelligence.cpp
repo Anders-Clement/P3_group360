@@ -32,7 +32,7 @@ void masterIntelligence::joy_callback(const sensor_msgs::Joy::ConstPtr& msg)
     if(mode >= 5)
       mode = 1;
 
-    //ROS_INFO_STREAM(mode);
+    ROS_INFO_STREAM(mode);
     current_mode.data = mode;
     mode_pub.publish(current_mode);
 
@@ -46,7 +46,7 @@ void masterIntelligence::joy_callback(const sensor_msgs::Joy::ConstPtr& msg)
       if(msg->buttons[i + 13])
         gesture = i + 2; //0:unknown, 1:rest, 2-5 - wanted gestures
   }
-  ROS_INFO_STREAM(gesture);
+  //ROS_INFO_STREAM(gesture);
 }
 
 //checks what gesture the myo detects and changes it from string to int representation
