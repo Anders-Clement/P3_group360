@@ -8,9 +8,9 @@ masterIntelligence::masterIntelligence(ros::NodeHandle* n, int type){
   joint_pub = n->advertise<sensor_msgs::JointState>("joint_states", 10);
   vibrate_pub = n->advertise<std_msgs::UInt8>("/myo_raw/vibrate", 10);
   mode_pub = n->advertise<std_msgs::Int16>("/crustcrawler/mode", 10);
+  gesture_pub = n->advertise<std_msgs::Int16>("/crustcrawler/gesture", 10);
 
   get_angle_vel = n->subscribe("/crustcrawler/getAngleVel", 10, &masterIntelligence::get_angle_vel_callback, this);
-  //pose_sub = n.subscribe("/myo_raw/pose", 10, &masterIntelligence::myo_raw_pose_callback, this);
 
   if(type == 0)
     gest_str_sub = n->subscribe("/myo_raw/myo_gest_str", 10, &masterIntelligence::myo_raw_gest_str_callback, this);
@@ -19,41 +19,10 @@ masterIntelligence::masterIntelligence(ros::NodeHandle* n, int type){
   else
     ROS_INFO_STREAM("UNKNOWN TYPE FOR MASTERINTELLIGENCE!");
 
-  ros::spinOnce();
+  while (update_angle_vel)
+    ros::spinOnce();
 }
 
-/*
-// Takes the quaternions from the imu and calculates the euler angles (roll, pitch and yaw)
-void masterIntelligence::myo_raw_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& msg){
-  float x = msg->pose.orientation.x;
-  float y = msg->pose.orientation.y;
-  float z = msg->pose.orientation.z;
-  float w = msg->pose.orientation.w;
-
-  float roll, pitch, yaw;
-
-  // roll (x-axis rotation)
-  double sinr_cosp = 2 * (w * x + y * z);
-  double cosr_cosp = 1 - 2 * (x * x + y * y);
-  roll = std::atan2(sinr_cosp, cosr_cosp);
-
-  // pitch (y-axis rotation)
-  double sinp = 2 * (w * y - z * x);
-  if (std::abs(sinp) >= 1)
-    pitch = std::copysign(M_PI / 2, sinp); // use 90 degrees if out of range
-  else
-    pitch = std::asin(sinp);
-
-  // yaw (z-axis rotation)
-  double siny_cosp = 2 * (w * z + x * y);
-  double cosy_cosp = 1 - 2 * (y * y + z * z);
-  yaw = std::atan2(siny_cosp, cosy_cosp);
-
-  eulerAng[0] = roll;
-  eulerAng[1] = pitch;
-  eulerAng[2] = yaw;
-}
-*/
 
 void masterIntelligence::joy_callback(const sensor_msgs::Joy::ConstPtr& msg)
 {
@@ -91,6 +60,8 @@ void masterIntelligence::myo_raw_gest_str_callback(const std_msgs::String::Const
     if (data == known_gestures[i]){
       gesture = i;
       ROS_INFO_STREAM(data);
+      current_gesture.data = gesture;
+      gesture_pub.publish(current_gesture);
       break;
     }
   }
@@ -168,8 +139,6 @@ void masterIntelligence::handleGesture(){
             break;
           }
           case 2:{
-            if(pos[3] < pos[4])
-              break;
             pos[3] += move_pose;
             vel[3] = move_pose*UPDATE_RATE;
             pos[4] -= move_pose;
@@ -324,12 +293,12 @@ void masterIntelligence::handleGesture(){
     pos[2] = 3.14/2;
   if (pos[3] > 3.14/2)
     pos[3] = 3.14/2;
-  else if (pos[3] < -0.6)
-    pos[3] = -0.6;
+  else if (pos[3] < -0.0)
+    pos[3] = -0.0;
   if (pos[4] < -3.14/2)
     pos[4] = -3.14/2;
-  else if (pos[4] > 0.6)
-    pos[4] = 0.6;
+  else if (pos[4] > 0.0)
+    pos[4] = 0.0;
 
 
 
