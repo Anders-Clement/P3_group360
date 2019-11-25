@@ -333,6 +333,7 @@ void masterIntelligence::checkMyo(){
       }
       */
     }
+  }
   
 
 // setting the joint limits
@@ -393,6 +394,7 @@ void masterIntelligence::checkMyo(){
   // publish trajectories
   trajectory_pub.publish(trajectories);
 }
+
 
 
 // main where it all begins
