@@ -39,7 +39,7 @@ void masterIntelligence::joy_callback(const sensor_msgs::Joy::ConstPtr& msg)
     return;
   }
 
-  gesture = 0;
+  gesture = 1;
 
   for(int i = 0; i < 4; i++)
   {

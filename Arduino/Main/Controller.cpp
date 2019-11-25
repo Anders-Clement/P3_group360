@@ -12,10 +12,15 @@ void PID_Controller::trajectoryFunk(int* trajectoryAngles_incomming)
   for (int i = 0; i < 5; i++)
   {
     int dataindex = i * 3;
-    posDesired[i] = (float)trajectoryAngles_incomming[dataindex] /1000.0;
-    velDesired[i] = (float)trajectoryAngles_incomming[dataindex + 1] /1000.0;
-    accDesired[i] = (float)trajectoryAngles_incomming[dataindex + 2] /1000.0;
+    posDesired[i] = (float)(trajectoryAngles_incomming[dataindex] /1000.0);
+    velDesired[i] = (float)(trajectoryAngles_incomming[dataindex + 1] /1000.0);
+    accDesired[i] = (float)(trajectoryAngles_incomming[dataindex + 2] /1000.0);
   }
+
+  for (int i = 3; i < 5; i++) {
+    posDesired[i] = -posDesired[i];
+  }
+
 }
 // calculates error of desired - actual position
 float* PID_Controller::getErrorPos()
@@ -122,8 +127,8 @@ float* PID_Controller::calculateTorque()
   tau[4] = tmark[4] * 0.0004618954*100;
 
   // clamping part
-  const float limit_upper[5] = {1.0, 2.0,1.0,100,100};//OG: {3.0, 4.0, 3.0, 2.0, 2.0};
-  const float limit_lower[5] = {-1.0,-2.0,-1.0,-100.0,-100.0};//OG: {-3.0, -4.0, -3.0, -2.0, -2.0};
+  const float limit_upper[5] = {1.0, 2.0,1.0, 1.0, 1.0};//OG: {3.0, 4.0, 3.0, 2.0, 2.0};
+  const float limit_lower[5] = {-1.0,-2.0,-1.0,-1.0,-1.0};//OG: {-3.0, -4.0, -3.0, -2.0, -2.0};
   static float output[5];
   bool limit_bool[5];
   bool sign_bool[5];
