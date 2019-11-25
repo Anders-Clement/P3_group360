@@ -81,11 +81,8 @@ void masterIntelligence::get_angle_vel_callback(const std_msgs::Int16MultiArray:
   vector<short int> data_int = msg->data;
   vector<double> data;
   data.resize(data_int.size());
-
   for(int i = 0; i < data_int.size(); i++)
     data[i] = data_int[i] /1000.0;
-
-
   // takes the current pos and vel and divides them into 2 different vectors
   if (update_angle_vel){
     update_angle_vel = false;
@@ -185,7 +182,9 @@ void masterIntelligence::checkMyo(){
               if(ros::Time::now().toSec() - count_time.toSec() >= 2.0){ // if the gesture is held for 2 sec
                 for (size_t i = 0; i < 5; i++) // set the macro to the current position for all joints
                   macro[0][i] = pos[i];
-                ROS_INFO_STREAM("macro 0 set:"); 
+                ROS_INFO_STREAM("macro 0 set:");
+                vibrate.data = 2;
+                vibrate_pub.publish(vibrate);
                 break;
               }
               ros::spinOnce();
@@ -199,6 +198,8 @@ void masterIntelligence::checkMyo(){
                 for (size_t i = 0; i < 5; i++)
                   macro[1][i] = pos[i];
                 ROS_INFO_STREAM("macro 1 set:");
+                vibrate.data = 2;
+                vibrate_pub.publish(vibrate);
                 break;
               }
               ros::spinOnce();
@@ -212,6 +213,8 @@ void masterIntelligence::checkMyo(){
                 for (size_t i = 0; i < 5; i++)
                   macro[2][i] = pos[i];
                 ROS_INFO_STREAM("macro 2 set:");
+                vibrate.data = 2;
+                vibrate_pub.publish(vibrate);
                 break;
               }
               ros::spinOnce();
@@ -225,6 +228,8 @@ void masterIntelligence::checkMyo(){
                 for (size_t i = 0; i < 5; i++)
                   macro[3][i] = pos[i];
                 ROS_INFO_STREAM("macro 3 set:");
+                vibrate.data = 2;
+                vibrate_pub.publish(vibrate);
                 break;
               }
               ros::spinOnce();
