@@ -55,7 +55,7 @@ void PID_Controller::addError()
 
   for (int i = 0; i < 5; i++)
   {
-    errorSum[i] = errorSum[i] + posError[i] * limit_multiply[i];
+    errorSum[i] = errorSum[i] + posError[i] * ki[i] * clampOff[i];
   }
 }
 
@@ -84,7 +84,7 @@ float* PID_Controller::calculateTorque()
 
   for (int i = 0; i < 5; i++)
   {
-    tmark[i] = kp[i] * posError[i] + kv[i] * velError[i] + ki[i] * errorSum[i] * clampOff[i] + accDesired[i];
+    tmark[i] = kp[i] * posError[i] + kv[i] * velError[i] + errorSum[i] + accDesired[i];
   }
   //tmark[3] = kp[3] * posError[3] + accDesired[3];
   //tmark[4] = kp[4] * posError[4] + accDesired[4];
@@ -141,18 +141,15 @@ float* PID_Controller::calculateTorque()
     {
       output[i] = limit_upper[i];
       limit_bool[i] = true;
-      limit_multiply[i]= 0.0;
     }
     else if (tau[i] < limit_lower[i])
     {
       output[i] = limit_lower[i];
       limit_bool[i] = true;
-      limit_multiply[i]= 0.0;
     }
     else
     {
       limit_bool[i] = false;
-      limit_multiply[i]= 1.0;
     }
 
     if (posError[i] >= 0 && output[i] >= 0 || posError[i] < 0 && output < 0)
