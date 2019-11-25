@@ -15,9 +15,9 @@ void Display::reset()
   lcd->clear();
   lcd->print("Status: ");
   lcd->setCursor(8, 0);
-  
+
   lcd->setCursor(0, 1);
-  lcd->print("Mode: ");
+  lcd->print("Mode ");
   lcd->setCursor(6, 1);
 
   lcd->setCursor(0,2);
@@ -27,9 +27,9 @@ void Display::reset()
 
 void Display::setMode(char* data)
 {
-  lcd->setCursor(6, 1);
-  lcd->print("          ");
-  lcd->setCursor(6, 1);
+  lcd->setCursor(5, 1);
+  lcd->print("           ");
+  lcd->setCursor(5, 1);
   lcd->print(data);
 }
 

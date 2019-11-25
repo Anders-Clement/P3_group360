@@ -38,6 +38,12 @@ float* PID_Controller::getErrorVel()
   return velError;
 }
 
+void PID_Controller::resetErrorSum()
+{
+  for(int i = 0; i < 5; i++)
+    errorSum[i] = 0.0;
+}
+
 void PID_Controller::addError()
 {
   float *posErrorptr = getErrorPos();
@@ -49,7 +55,7 @@ void PID_Controller::addError()
 
   for (int i = 0; i < 5; i++)
   {
-    errorSum[i] = errorSum[i] + posError[i];
+    errorSum[i] = errorSum[i] + posError[i] * limit_multiply[i];
   }
 }
 
@@ -73,12 +79,12 @@ float* PID_Controller::calculateTorque()
   }
 
   //this section calculates t'
-  static float tau[5];
+  float tau[5];
   float tmark[5];
 
   for (int i = 0; i < 5; i++)
   {
-    tmark[i] = kp[i] * posError[i] + kv[i] * velError[i] + ki[i] * errorSum[i] + accDesired[i];
+    tmark[i] = kp[i] * posError[i] + kv[i] * velError[i] + ki[i] * errorSum[i] * clampOff[i] + accDesired[i];
   }
   //tmark[3] = kp[3] * posError[3] + accDesired[3];
   //tmark[4] = kp[4] * posError[4] + accDesired[4];
@@ -115,7 +121,56 @@ float* PID_Controller::calculateTorque()
   tau[3] = tmark[3] * 0.0004618954*100;
   tau[4] = tmark[4] * 0.0004618954*100;
 
-  return tau;
+  // clamping part
+  float limit_upper[5] = {1.0, 2.0,1.0,0.7,0.7};//OG: {3.0, 4.0, 3.0, 2.0, 2.0};
+  float limit_lower[5] = {-1.0,-2.0,-1.0,-0.7,-0.7};//OG: {-3.0, -4.0, -3.0, -2.0, -2.0};
+  static float output[5];
+  bool limit_bool[5];
+  bool sign_bool[5];
+
+  for (int i = 0; i < 5; i++)
+  {
+    output[i] = tau[i];
+    limit_bool[i] = false;
+    sign_bool[i] = false;
+  }
+
+  for (int i = 0; i < 5; i++)
+  {
+    if (tau[i] > limit_upper[i])
+    {
+      output[i] = limit_upper[i];
+      limit_bool[i] = true;
+      limit_multiply[i]= 0.0;
+    }
+    else if (tau[i] < limit_lower[i])
+    {
+      output[i] = limit_lower[i];
+      limit_bool[i] = true;
+      limit_multiply[i]= 0.0;
+    }
+    else
+    {
+      limit_bool[i] = false;
+      limit_multiply[i]= 1.0;
+    }
+
+    if (posError[i] >= 0 && output[i] >= 0 || posError[i] < 0 && output < 0)
+    {
+      sign_bool[i] = true;
+    }
+
+    if (limit_bool[i] && sign_bool[i])
+    {
+      clampOff[i] = 0.0;
+    }
+    else
+    {
+      clampOff[i] = 1.0;
+    }
+  }
+
+  return output;
 }
 float* PID_Controller::update()
 {
