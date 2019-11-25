@@ -57,11 +57,11 @@ private:
     ros::Subscriber joy_sub;
 
     // message declarations
-    std_msgs::Int16MultiArray trajectories;
-    sensor_msgs::JointState joint_state;
-    std_msgs::UInt8 vibrate;
-    std_msgs::Int16 current_mode;
-    std_msgs::Int16 current_gesture;
+    std_msgs::Int16MultiArray trajectories_msg;
+    sensor_msgs::JointState joint_state_msg;
+    std_msgs::UInt8 vibrate_msg;
+    std_msgs::Int16 mode_msg;
+    std_msgs::Int16 gesture_msg;
 
 };
 

@@ -33,8 +33,8 @@ void masterIntelligence::joy_callback(const sensor_msgs::Joy::ConstPtr& msg)
       mode = 1;
 
     //ROS_INFO_STREAM(mode);
-    current_mode.data = mode;
-    mode_pub.publish(current_mode);
+    mode_msg.data = mode;
+    mode_pub.publish(mode_msg);
 
     return;
   }
@@ -60,8 +60,8 @@ void masterIntelligence::myo_raw_gest_str_callback(const std_msgs::String::Const
     if (data == known_gestures[i]){
       gesture = i;
       ROS_INFO_STREAM(data);
-      current_gesture.data = gesture;
-      gesture_pub.publish(current_gesture);
+      gesture_msg.data = gesture;
+      gesture_pub.publish(gesture_msg);
       break;
     }
   }
@@ -72,10 +72,10 @@ void masterIntelligence::myo_raw_gest_str_callback(const std_msgs::String::Const
     else
       mode += 1;
     ROS_INFO_STREAM(mode);
-    current_mode.data = mode;
-    mode_pub.publish(current_mode);
-    vibrate.data = 1;
-    vibrate_pub.publish(vibrate);
+    mode_msg.data = mode;
+    mode_pub.publish(mode_msg);
+    vibrate_msg.data = 1;
+    vibrate_pub.publish(vibrate_msg);
   }
 }
 
@@ -175,8 +175,8 @@ void masterIntelligence::handleGesture(){
                 for (size_t i = 0; i < 5; i++) // set the macro to the current position for all joints
                   macro[0][i] = pos[i];
                 ROS_INFO_STREAM("macro 0 set:");
-                vibrate.data = 2;
-                vibrate_pub.publish(vibrate);
+                vibrate_msg.data = 2;
+                vibrate_pub.publish(vibrate_msg);
                 break;
               }
               ros::spinOnce();
@@ -190,8 +190,8 @@ void masterIntelligence::handleGesture(){
                 for (size_t i = 0; i < 5; i++)
                   macro[1][i] = pos[i];
                 ROS_INFO_STREAM("macro 1 set:");
-                vibrate.data = 2;
-                vibrate_pub.publish(vibrate);
+                vibrate_msg.data = 2;
+                vibrate_pub.publish(vibrate_msg);
                 break;
               }
               ros::spinOnce();
@@ -205,8 +205,8 @@ void masterIntelligence::handleGesture(){
                 for (size_t i = 0; i < 5; i++)
                   macro[2][i] = pos[i];
                 ROS_INFO_STREAM("macro 2 set:");
-                vibrate.data = 2;
-                vibrate_pub.publish(vibrate);
+                vibrate_msg.data = 2;
+                vibrate_pub.publish(vibrate_msg);
                 break;
               }
               ros::spinOnce();
@@ -220,8 +220,8 @@ void masterIntelligence::handleGesture(){
                 for (size_t i = 0; i < 5; i++)
                   macro[3][i] = pos[i];
                 ROS_INFO_STREAM("macro 3 set:");
-                vibrate.data = 2;
-                vibrate_pub.publish(vibrate);
+                vibrate_msg.data = 2;
+                vibrate_pub.publish(vibrate_msg);
                 break;
               }
               ros::spinOnce();
@@ -303,36 +303,36 @@ void masterIntelligence::handleGesture(){
 
 
   // Joint state publisher for RVIZ debugging
-  joint_state.header.stamp = ros::Time::now();
-  joint_state.name.clear();
-  joint_state.name.push_back("joint1");
-  joint_state.name.push_back("joint2");
-  joint_state.name.push_back("joint3");
-  joint_state.name.push_back("joint4");
-  joint_state.name.push_back("joint5");
+  joint_state_msg.header.stamp = ros::Time::now();
+  joint_state_msg.name.clear();
+  joint_state_msg.name.push_back("joint1");
+  joint_state_msg.name.push_back("joint2");
+  joint_state_msg.name.push_back("joint3");
+  joint_state_msg.name.push_back("joint4");
+  joint_state_msg.name.push_back("joint5");
   // clear previous message
-  joint_state.position.clear();
-  // joint_state.position
-  joint_state.position.push_back(pos[0]);
-  joint_state.position.push_back(pos[1]);
-  joint_state.position.push_back(pos[2]);
-  joint_state.position.push_back(pos[3]);
-  joint_state.position.push_back(pos[4]);
+  joint_state_msg.position.clear();
+  // joint_state_msg.position
+  joint_state_msg.position.push_back(pos[0]);
+  joint_state_msg.position.push_back(pos[1]);
+  joint_state_msg.position.push_back(pos[2]);
+  joint_state_msg.position.push_back(pos[3]);
+  joint_state_msg.position.push_back(pos[4]);
   // send the joint state and transform
-  joint_pub.publish(joint_state);
+  joint_pub.publish(joint_state_msg);
 
 
 
 
   // clear previous message
-  trajectories.data.clear();
-  // update trajectories
+  trajectories_msg.data.clear();
+  // update trajectories_msg
   for (size_t i = 0; i < 5; i++)
   {
-    trajectories.data.push_back((int16_t)(pos[i]*1000));
-    trajectories.data.push_back((int16_t)(vel[i]*1000));
-    trajectories.data.push_back((int16_t)(ang[i]*1000));
+    trajectories_msg.data.push_back((int16_t)(pos[i]*1000));
+    trajectories_msg.data.push_back((int16_t)(vel[i]*1000));
+    trajectories_msg.data.push_back((int16_t)(ang[i]*1000));
   }
-  // publish trajectories
-  trajectory_pub.publish(trajectories);
+  // publish trajectories_msg
+  trajectory_pub.publish(trajectories_msg);
 }
