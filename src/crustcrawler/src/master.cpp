@@ -8,48 +8,19 @@ masterIntelligence::masterIntelligence(){
   joint_pub = n.advertise<sensor_msgs::JointState>("joint_states", 10);
   vibrate_pub = n.advertise<std_msgs::UInt8>("/myo_raw/vibrate", 10);
   mode_pub = n.advertise<std_msgs::Int16>("/crustcrawler/mode", 10);
+  gesture_pub = n.advertise<std_msgs::Int16>("/crustcrawler/gesture", 10);
 
   gest_str_sub = n.subscribe("/myo_raw/myo_gest_str", 10, &masterIntelligence::myo_raw_gest_str_callback, this);
   get_angle_vel = n.subscribe("/crustcrawler/getAngleVel", 10, &masterIntelligence::get_angle_vel_callback, this);
-  //pose_sub = n.subscribe("/myo_raw/pose", 10, &masterIntelligence::myo_raw_pose_callback, this);
 
-  ros::spinOnce();
+  while (update_angle_vel)
+  {
+    ros::spinOnce();
+  }
 }
 
-/*
-// Takes the quaternions from the imu and calculates the euler angles (roll, pitch and yaw)
-void masterIntelligence::myo_raw_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& msg){
-  float x = msg->pose.orientation.x;
-  float y = msg->pose.orientation.y;
-  float z = msg->pose.orientation.z;
-  float w = msg->pose.orientation.w;
 
-  float roll, pitch, yaw;
-
-  // roll (x-axis rotation)
-  double sinr_cosp = 2 * (w * x + y * z);
-  double cosr_cosp = 1 - 2 * (x * x + y * y);
-  roll = std::atan2(sinr_cosp, cosr_cosp);
-
-  // pitch (y-axis rotation)
-  double sinp = 2 * (w * y - z * x);
-  if (std::abs(sinp) >= 1)
-    pitch = std::copysign(M_PI / 2, sinp); // use 90 degrees if out of range
-  else
-    pitch = std::asin(sinp);
-
-  // yaw (z-axis rotation)
-  double siny_cosp = 2 * (w * z + x * y);
-  double cosy_cosp = 1 - 2 * (y * y + z * z);
-  yaw = std::atan2(siny_cosp, cosy_cosp);
-
-  eulerAng[0] = roll;
-  eulerAng[1] = pitch;
-  eulerAng[2] = yaw;
-}
-*/
-
-//checks what gesture the myo detects and changes it from string to int representation
+// checks what gesture the myo detects and changes it from string to int representation
 void masterIntelligence::myo_raw_gest_str_callback(const std_msgs::String::ConstPtr &msg){
 
   string data = msg->data;
@@ -60,16 +31,17 @@ void masterIntelligence::myo_raw_gest_str_callback(const std_msgs::String::Const
     if (data == known_gestures[i]){
       gesture = i;
       ROS_INFO_STREAM(data);
+      current_gesture.data = gesture;
+      gesture_pub.publish(current_gesture);
       break;
     }
   }
-  // if the gesture held is "THUMB_TO_PINKY" then change mode from 1 to 5 and then reset to 1
+  // if the gesture held is "THUMB_TO_PINKY" then change mode from 1 to 4 and then reset to 1
   if (gesture == 6){
     if (mode == 4)
       mode = 1;
     else
       mode += 1;
-    modeChanged = true;
     ROS_INFO_STREAM(mode);
     current_mode.data = mode;
     mode_pub.publish(current_mode);
@@ -77,6 +49,7 @@ void masterIntelligence::myo_raw_gest_str_callback(const std_msgs::String::Const
     vibrate_pub.publish(vibrate);
   }
 }
+
 
 //Takes the current joint angles and velocities
 void masterIntelligence::get_angle_vel_callback(const std_msgs::Int16MultiArray::ConstPtr &msg){
@@ -96,6 +69,7 @@ void masterIntelligence::get_angle_vel_callback(const std_msgs::Int16MultiArray:
     }
   }
 }
+
 
 void masterIntelligence::checkMyo(){
   if (gesture != 0 && gesture != 6){ // checking that gesture is not unknown or pinky_to_thumb because pinky to thumb changes modes
@@ -131,13 +105,6 @@ void masterIntelligence::checkMyo(){
         break;
       }
       case 2:{ // mode 2 controlls the third joint and the gripper with the four remaining gestures that is not rest
-        if (modeChanged){ // if first time since mode change
-          modeChanged = false;
-          for (int i = 0; i < 3; i++) // set roll pitch yaw to current position
-            old_eulerAng[i] = eulerAng[i];
-        }
-        // tracks the difference from current IMU position to previous
-
         switch (gesture){
           case 1:{
             for (size_t i = 0; i < 5; i++)
@@ -145,19 +112,17 @@ void masterIntelligence::checkMyo(){
             break;
           }
           case 2:{
-            if(pos[3] < pos[4])
-              break;
-            pos[3] += move_pose;
-            vel[3] = move_pose*UPDATE_RATE;
-            pos[4] -= move_pose;
-            vel[4] = -move_pose*UPDATE_RATE;
-            break;
-          }
-          case 3:{
             pos[3] -= move_pose;
             vel[3] = -move_pose*UPDATE_RATE;
             pos[4] += move_pose;
             vel[4] = move_pose*UPDATE_RATE;
+            break;
+          }
+          case 3:{
+            pos[3] += move_pose;
+            vel[3] = move_pose*UPDATE_RATE;
+            pos[4] -= move_pose;
+            vel[4] = -move_pose*UPDATE_RATE;
             break;
           }
           case 4:{
@@ -171,10 +136,6 @@ void masterIntelligence::checkMyo(){
             break;
           }
         }
-        // sets new eulerAng to old eulerAng
-        for (int i = 0; i < 3; i++)
-          old_eulerAng[i] = eulerAng[i];
-        break;
       }
       case 3:{ // mode 3 is able to set a the current joint angles macro to a gesture by holding the gesture for 2 seconds
         switch(gesture){
@@ -289,56 +250,9 @@ void masterIntelligence::checkMyo(){
         }
       break;
       }
-      /*
-      // mode 5 can controls the first two joints using the IMU from the Myo and then the four gestures to control the 3rd joint and the gripper
-      case 5:{
-        if (modeChanged){ // if first time since mode change
-          modeChanged = false;
-          for (int i = 0; i < 3; i++) // set roll pitch yaw to current position
-            old_eulerAng[i] = eulerAng[i];
-        }
-        // tracks the difference from current IMU position to previous
-        pos[0] -= eulerAng[0] - old_eulerAng[0];
-        pos[1] -= eulerAng[1] - old_eulerAng[1];
-        switch (gesture){
-          case 1:{
-            for (size_t i = 0; i < 5; i++)
-              vel[i] = 0.0;
-            break;
-          }
-          case 2:{
-            // fance gripper mode 
-            if (eulerAng[2] > old_eulerAng[2] && pos[3] < pos[4]) // if grippers are to close and trying to get closer break
-              break;
-            pos[3] -= eulerAng[2] - old_eulerAng[2];
-            pos[4] += eulerAng[2] - old_eulerAng[2];
-          }
-          case 3:{
-            // fancy gripper mode
-            pos[3] += eulerAng[2] - old_eulerAng[2];
-            pos[4] += eulerAng[2] - old_eulerAng[2];
-          }
-          case 4:{
-            pos[2] += move_pose;
-            vel[2] = move_pose*UPDATE_RATE;
-            break;
-          }
-          case 5:{
-            pos[2] -= move_pose;
-            vel[2] = -move_pose*UPDATE_RATE;
-            break;
-          }
-        }
-        // sets new eulerAng to old eulerAng
-        for (int i = 0; i < 3; i++)
-           old_eulerAng[i] = eulerAng[i];
-        break;
-      }
-      */
     }
   }
   
-
 // setting the joint limits
   if (pos[1] > 1.9)
     pos[1] = 1.9;
@@ -350,15 +264,12 @@ void masterIntelligence::checkMyo(){
     pos[2] = 3.14/2;
   if (pos[3] > 3.14/2)
     pos[3] = 3.14/2;
-  else if (pos[3] < -0.6)
-    pos[3] = -0.6;
+  else if (pos[3] < 0.0)
+    pos[3] = 0.0;
   if (pos[4] < -3.14/2)
     pos[4] = -3.14/2;
-  else if (pos[4] > 0.6)
-    pos[4] = 0.6;
-
-
-
+  else if (pos[4] > 0.0)
+    pos[4] = 0.0;
 
 
   // update joint_state
@@ -397,7 +308,6 @@ void masterIntelligence::checkMyo(){
   // publish trajectories
   trajectory_pub.publish(trajectories);
 }
-
 
 
 // main where it all begins
