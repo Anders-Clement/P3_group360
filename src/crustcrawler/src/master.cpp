@@ -11,11 +11,12 @@ masterIntelligence::masterIntelligence(){
 
   gest_str_sub = n.subscribe("/myo_raw/myo_gest_str", 10, &masterIntelligence::myo_raw_gest_str_callback, this);
   get_angle_vel = n.subscribe("/crustcrawler/getAngleVel", 10, &masterIntelligence::get_angle_vel_callback, this);
-  pose_sub = n.subscribe("/myo_raw/pose", 10, &masterIntelligence::myo_raw_pose_callback, this);
+  //pose_sub = n.subscribe("/myo_raw/pose", 10, &masterIntelligence::myo_raw_pose_callback, this);
 
   ros::spinOnce();
 }
 
+/*
 // Takes the quaternions from the imu and calculates the euler angles (roll, pitch and yaw)
 void masterIntelligence::myo_raw_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& msg){
   float x = msg->pose.orientation.x;
@@ -46,6 +47,7 @@ void masterIntelligence::myo_raw_pose_callback(const geometry_msgs::PoseStamped:
   eulerAng[1] = pitch;
   eulerAng[2] = yaw;
 }
+*/
 
 //checks what gesture the myo detects and changes it from string to int representation
 void masterIntelligence::myo_raw_gest_str_callback(const std_msgs::String::ConstPtr &msg){
@@ -113,7 +115,8 @@ void masterIntelligence::checkMyo(){
           case 3:{
             pos[1] -= move_pose;
             vel[1] = -move_pose*UPDATE_RATE;
-          break;}
+            break;
+          }
           case 4:{
             pos[0] += move_pose;
             vel[0] = move_pose*UPDATE_RATE;
