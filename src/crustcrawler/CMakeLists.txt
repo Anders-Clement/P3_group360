@@ -12,7 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   std_msgs
-  tf)
+  tf
+  )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -106,10 +107,10 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES crustcrawler
+   INCLUDE_DIRS include
+   LIBRARIES crustcrawler
    CATKIN_DEPENDS roscpp rospy std_msgs
-#  DEPENDS system_lib
+   DEPENDS system_lib
 )
 
 ###########
@@ -125,9 +126,9 @@ include_directories(
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/crustcrawler.cpp
-# )
+add_library(${PROJECT_NAME}
+  src/masterIntelligence.cpp
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -158,7 +159,9 @@ add_executable(myo_com src/myo_com.cpp)
 target_link_libraries(myo_com ${catkin_LIBRARIES})
 add_dependencies(myo_com crustcrawler_generate_messages_cpp)
 
-add_executable(master src/master.cpp)
+
+
+add_executable(master src/master.cpp src/masterIntelligence.cpp)
 target_link_libraries(master ${catkin_LIBRARIES})
 add_dependencies(master crustcrawler_generate_messages_cpp)
 
