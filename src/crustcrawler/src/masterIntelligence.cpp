@@ -287,16 +287,16 @@ void masterIntelligence::handleGesture(){
     pos[1] = 1.9;
   else if (pos[1] < -1.9)
     pos[1] = -1.9;
-  if (pos[2] < -3.14/2)
-    pos[2] = -3.14/2;
-  else if (pos[2] > 3.14/2)
-    pos[2] = 3.14/2;
-  if (pos[3] > 3.14/2)
-    pos[3] = 3.14/2;
+  if (pos[2] < -3.14/2.0)
+    pos[2] = -3.14/2.0;
+  else if (pos[2] > 3.14/2.0)
+    pos[2] = 3.14/2.0;
+  if (pos[3] > 3.14/2.0)
+    pos[3] = 3.14/2.0;
   else if (pos[3] < 0.0)
     pos[3] = 0.0;
-  if (pos[4] < -3.14/2)
-    pos[4] = -3.14/2;
+  if (pos[4] < -3.14/2.0)
+    pos[4] = -3.14/2.0;
   else if (pos[4] > 0.0)
     pos[4] = 0.0;
 
