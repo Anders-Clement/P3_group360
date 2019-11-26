@@ -31,7 +31,7 @@ public:
 
     float pos[5] = {0};
     float vel[5] = {0};
-    float ang[5] = {0};
+    float acc[5] = {0};
 
     // constucting functions
     void myo_raw_gest_str_callback(const std_msgs::String::ConstPtr& msg);

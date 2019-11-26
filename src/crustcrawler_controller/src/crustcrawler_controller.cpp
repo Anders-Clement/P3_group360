@@ -3,6 +3,7 @@
 #include "std_msgs/String.h"
 #include <sstream>
 #include <std_msgs/Float64MultiArray.h>
+#include <std_msgs/Int16MultiArray.h>
 #include <math.h>
 #include <cmath>
 
@@ -12,31 +13,31 @@ float posDesired[5];
 float velDesired[5];
 float accDesired[5];
 
-float kp[5] = {5.0, 10.0, 11.0, 25.0, 15.0};
-float kv[5] = {0.0, 2.0, 4.4, 0.0, 0.0};
+float kp[5] = {50.0, 10.0, 11.0, 25.0, 15.0};
+float kv[5] = {1.0, 2.0, 4.4, 0.0, 0.0};
 float ki[5] = {0.0, 0.2, 0.2, 0.0, 0.0};
 float errorSum[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
 float clampOff[5] = {1.0, 1.0, 1.0, 1.0, 1.0};
 
 //gets the robots current angeles/velocities and puts into 2 arrays.
-void angleFunk(const std_msgs::Float64MultiArray &robotAngles_incomming)
+void angleFunk(const std_msgs::Int16MultiArray &robotAngles_incomming)
 {
   for (int i = 0; i < 5; i++)
   {
     int dataindex = i * 2;
-    posRobot[i] = robotAngles_incomming.data[dataindex];
-    velRobot[i] = robotAngles_incomming.data[dataindex + 1];
+    posRobot[i] = robotAngles_incomming.data[dataindex]/1000.0;
+    velRobot[i] = robotAngles_incomming.data[dataindex + 1]/1000.0;
   }
 }
 //gets the robots desired pos,vel,acc for diffrernt joints and puts into 3 different arrays.
-void trajectoryFunk(const std_msgs::Float64MultiArray &trajectoryAngles_incomming)
+void trajectoryFunk(const std_msgs::Int16MultiArray &trajectoryAngles_incomming)
 {
   for (int i = 0; i < 5; i++)
   {
     int dataindex = i * 3;
-    posDesired[i] = trajectoryAngles_incomming.data[dataindex];
-    velDesired[i] = trajectoryAngles_incomming.data[dataindex + 1];
-    accDesired[i] = trajectoryAngles_incomming.data[dataindex + 2];
+    posDesired[i] = trajectoryAngles_incomming.data[dataindex]/1000.0;
+    velDesired[i] = trajectoryAngles_incomming.data[dataindex + 1]/1000.0;
+    accDesired[i] = trajectoryAngles_incomming.data[dataindex + 2]/1000.0;
   }
 }
 // calculates error of desired - actual position

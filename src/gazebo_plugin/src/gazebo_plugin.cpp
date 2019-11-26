@@ -9,6 +9,7 @@
 #include <gazebo/common/common.hh>
 #include <ros/ros.h>
 #include "std_msgs/Float64MultiArray.h"
+#include "std_msgs/Int16MultiArray.h"
 #include "string.h"
 
 namespace gazebo
@@ -52,7 +53,7 @@ public:
         }
 
         n = new ros::NodeHandle();
-        anglePublisher = n->advertise<std_msgs::Float64MultiArray>("/crustcrawler/getAngleVel", 1);
+        anglePublisher = n->advertise<std_msgs::Int16MultiArray>("/crustcrawler/getAngleVel", 1);
         angleSubscriber = n->subscribe("/crustcrawler/setTorques", 1, &CrustCrawlerPlugin::torqueUpdater, this);
 
         ROS_INFO("CrustCrawler Plugin has started, and is ready for combat!");
@@ -81,14 +82,14 @@ public:
         //if (currentTime.toSec() - prevRun.toSec() > (3.0))
         {
             prevRun = ros::Time::now();
-            std_msgs::Float64MultiArray msg;
+            std_msgs::Int16MultiArray msg;
             msg.data.resize(10);
             for (int i = 0; i < 5; i++)
             {
                 int dataIndex = (i * 2);
                 double currentPose = joints[i]->Position(2);
-                msg.data[dataIndex] = currentPose;
-                msg.data[dataIndex + 1] = (jointsLastAngle[i] - currentPose)/(1.0/30.0);
+                msg.data[dataIndex] = currentPose*1000.0;
+                msg.data[dataIndex + 1] = ((jointsLastAngle[i] - currentPose)*1000.0)/(1.0/30.0);
                 jointsLastAngle[i] = currentPose;
             }
             anglePublisher.publish(msg);
