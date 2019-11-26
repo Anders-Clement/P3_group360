@@ -249,10 +249,10 @@ void ProtocolController::setTorque(unsigned char address, float torque, float cu
   int PWM_value = (torque * C1 + current_omega * C2); //PWM_value with values from 0-885 (per protocol)
   //!!! ---   Omega must be in rads/sec, torque in Nm   --- !!! \\
 
-  if (PWM_value > 885)
+  if (PWM_value > 800) //885 is max pwm (100% duty cycle)
   {
     //Serial.println("setTorque PWM_value > 885, too high torque or omega!, clamping to 885");
-    PWM_value = 885;
+    PWM_value = 800;
   }
 
   unsigned char SendingArray[5];
