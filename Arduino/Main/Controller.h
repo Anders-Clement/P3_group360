@@ -21,8 +21,8 @@ class PID_Controller {
     float velDesired[5];
     float accDesired[5];
 
-    const float kp[5] = {10.0, 10.0, 11.0, 15.0, 15.0};
-    const float kv[5] = {0.0, 2.0, 4.4, 0.0, 0.0};
+    const float kp[5] = {10.0, 10.0, 11.0, 200.0, 200.0};
+    const float kv[5] = {0.0, 2.0, 4.4, 20.0, 20.0};
     const float ki[5] = {0.0, 0.2, 0.2, 0.0, 0.0};
     float clampOff[5] = {1.0, 1.0, 1.0, 1.0, 1.0};
     float errorSum[5] = {0.0, 0.0, 0.0, 0.0, 0.0};

@@ -3,7 +3,7 @@
 import rospy
 import numpy as np
 import matplotlib.pyplot as plt
-from std_msgs.msg import Float64MultiArray
+from std_msgs.msg import Int16MultiArray
 
 pos = [[],[],[],[]]
 actualPos = [[],[],[],[]]
@@ -18,9 +18,9 @@ def callbackActual(data):
         return
 
     actualPos[0].append(rospy.get_rostime().to_sec())
-    actualPos[1].append( data.data[0] )
-    actualPos[2].append( data.data[2] )
-    actualPos[3].append( data.data[4] )
+    actualPos[1].append( float(data.data[0]/1000.0) )
+    actualPos[2].append( float(data.data[2]/1000.0) )
+    actualPos[3].append( float(data.data[4]/1000.0) )
 
 def callbackTraj(data):
     global running
@@ -34,17 +34,17 @@ def callbackTraj(data):
         return
 
     pos[0].append( rospy.get_rostime().to_sec() )
-    pos[1].append( data.data[0] )
-    pos[2].append( data.data[3] )
-    pos[3].append( data.data[6] )
+    pos[1].append( float(data.data[0]/1000.0) )
+    pos[2].append( float(data.data[3]/1000.0) )
+    pos[3].append( float(data.data[6]/1000.0) )
 
 def listener():
     global running
     global firstRun
 
     rospy.init_node('listener', anonymous=True)
-    rospy.Subscriber('/crustcrawler/getAngleVel', Float64MultiArray, callbackActual)
-    rospy.Subscriber('/crustcrawler/trajectory', Float64MultiArray, callbackTraj)
+    rospy.Subscriber('/crustcrawler/getAngleVel', Int16MultiArray, callbackActual)
+    rospy.Subscriber('/crustcrawler/trajectory', Int16MultiArray, callbackTraj)
 
     rate = rospy.Rate(10.0)
     d = rospy.Duration.from_sec(20)
