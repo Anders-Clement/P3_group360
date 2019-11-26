@@ -105,7 +105,7 @@ float *calculateTorque()
   }
 
   //calculates the dynamic part
-  float H11, H12, H13, H21, H22, H23, H31, H32, H33, VG1, VG2, VG3;
+  float H11, H12, H13, H21, H22, H23, H31, H32, H33;
 
   float correctedPosOne = posRobot[1] + M_PI / 2.0; //compensate for wrong 0-position
 
