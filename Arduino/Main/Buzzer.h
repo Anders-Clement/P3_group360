@@ -8,6 +8,7 @@ class Buzzer
 public:
   Buzzer(int _pin);
   void buzz(int millis);
+  void buzz(int millis, int pwm);
   void update();
 private:
   long endTime;

@@ -9,7 +9,13 @@ Buzzer::Buzzer(int _pin)
 void Buzzer::buzz(int mill)
 {
   endTime = millis() + mill;
-  digitalWrite(pin, HIGH);
+  analogWrite(pin, 5);
+}
+
+void Buzzer::buzz(int mill, int pwm)
+{
+  endTime = millis() + mill;
+  analogWrite(pin, pwm);
 }
 
 void Buzzer::update()

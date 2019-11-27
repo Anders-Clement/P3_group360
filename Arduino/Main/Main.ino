@@ -7,7 +7,7 @@
 #include "Display.h"
 #include "Buzzer.h"
 
-#define buzz_pin 48
+#define buzz_pin 11
 
 
 ProtocolController* controler_ptr;
@@ -62,7 +62,7 @@ void setup()
   display_ptr->setMode("0: WFI");
   PID_Controller_ptr = new PID_Controller(thetas, velocities);
   buzzer = new Buzzer(buzz_pin);
-  buzzer->buzz(1000);
+  buzzer->buzz(750);
 
   nh.getHardware()->setBaud(57600);
   nh.initNode();
@@ -125,6 +125,7 @@ void loop()
     {
       rosConnected = true;
       display_ptr->setConnect("True");
+      buzzer->buzz(200);
     }
     else
       display_ptr->setConnect("False");
@@ -168,6 +169,7 @@ void command_callback(const std_msgs::Int16& msg)
 
 void mode_callback(const std_msgs::Int16& msg)
 {
+  buzzer->buzz(10, 1);
   switch (msg.data) {
     case 1:
       display_ptr->setMode("1: Bas.Sho.");
