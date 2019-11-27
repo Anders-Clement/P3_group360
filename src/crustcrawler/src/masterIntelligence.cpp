@@ -140,17 +140,17 @@ void masterIntelligence::handleGesture(){
             break;
           }
           case 2:{
-            pos[3] -= move_pose;
-            vel[3] = -move_pose*UPDATE_RATE;
-            pos[4] += move_pose;
-            vel[4] = move_pose*UPDATE_RATE;
-            break;
-          }
-          case 3:{
             pos[3] += move_pose;
             vel[3] = move_pose*UPDATE_RATE;
             pos[4] -= move_pose;
             vel[4] = -move_pose*UPDATE_RATE;
+            break;
+          }
+          case 3:{
+            pos[3] -= move_pose;
+            vel[3] = -move_pose*UPDATE_RATE;
+            pos[4] += move_pose;
+            vel[4] = move_pose*UPDATE_RATE;
             break;
           }
           case 4:{

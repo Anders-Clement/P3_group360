@@ -46,7 +46,8 @@ def listener():
 
     rospy.init_node('listener', anonymous=True)
     rospy.Subscriber('/crustcrawler/getAngleVel',Int16MultiArray, callbackActual)
-    traj_pub = rospy.Publisher('/crustcrawler/trajectory', Int16MultiArray,queue_size=10)
+    traj_pub = rospy.Pub
+    lisher('/crustcrawler/trajectory', Int16MultiArray,queue_size=10)
     rate = rospy.Rate(10.0)
     rospy.sleep(rospy.Duration.from_sec(2))
 
@@ -62,7 +63,7 @@ def listener():
     indexForArray = 0
 
 
-    for i in range(0, 5):  # calculates the 'a' coefficients using goal ang and vel
+    for i in range(0, 5):  # calculates the 'a' coefficients using goal-ang and -vel
         a[0][i] = traj_start[i]
         a[1][i] = 0.0
         a[2][i] = 3.0 / (pow(tf, 2.0)) * (traj_end[i] - traj_start[i]) - 2.0 / tf * 0.0 - 1.0 / tf * 0.0
