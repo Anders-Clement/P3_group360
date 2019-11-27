@@ -29,12 +29,13 @@ void masterIntelligence::joy_callback(const sensor_msgs::Joy::ConstPtr& msg)
   if(msg->buttons[0]) //change mode with x button
   {
     mode++;
-    if(mode >= 5)
+    if(mode > 4)
       mode = 1;
 
     //ROS_INFO_STREAM(mode);
     mode_msg.data = mode;
     mode_pub.publish(mode_msg);
+    ROS_INFO_STREAM(mode);
 
     return;
   }
@@ -274,7 +275,7 @@ void masterIntelligence::handleGesture(){
         for (int i = 0; i < 5; i++){
           pos[i] = a[0][i] + a[1][i] * t + a[2][i] * pow(t, 2.0) + a[3][i] * pow(t, 3.0);
           vel[i] = a[1][i] + 2.0 * a[2][i] * t + 3.0 * a[3][i] * pow(t, 2.0);
-          ang[i] = 2.0 * a[2][i] + 6.0 * a[3][i] * t;
+          acc[i] = 2.0 * a[2][i] + 6.0 * a[3][i] * t;
         }
       break;
       }
@@ -331,7 +332,7 @@ void masterIntelligence::handleGesture(){
   {
     trajectories_msg.data.push_back((int16_t)(pos[i]*1000));
     trajectories_msg.data.push_back((int16_t)(vel[i]*1000));
-    trajectories_msg.data.push_back((int16_t)(ang[i]*1000));
+    trajectories_msg.data.push_back((int16_t)(acc[i]*1000));
   }
   // publish trajectories_msg
   trajectory_pub.publish(trajectories_msg);

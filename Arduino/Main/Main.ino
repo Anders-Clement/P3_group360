@@ -5,6 +5,7 @@
 #include "Controller.h"
 #include <std_msgs/Int16.h>
 #include "Display.h"
+#include "Buzzer.h"
 
 #define buzz_pin 48
 
@@ -12,6 +13,7 @@
 ProtocolController* controler_ptr;
 PID_Controller *PID_Controller_ptr;
 Display *display_ptr;   //Display controller
+Buzzer* buzzer;
 
 void setPWMMode(); //Sets PWM mode on motors
 void publishAngVel(); //Publishes our angel and velocities to ROS
@@ -59,7 +61,8 @@ void setup()
   display_ptr->setStatus("Setup");
   display_ptr->setMode("0: WFI");
   PID_Controller_ptr = new PID_Controller(thetas, velocities);
-
+  buzzer = new Buzzer(buzz_pin);
+  buzzer->buzz(1000);
 
   nh.getHardware()->setBaud(57600);
   nh.initNode();
@@ -77,6 +80,7 @@ void setup()
   //set length of msg, otherwise everything will not be sent
   angleVel_msg.data_length = 10;
 
+  buzzer->update();
   display_ptr->setStatus("Boot Act");
   bool init = false;
   while(!init)
@@ -106,6 +110,7 @@ void setup()
 
 void loop()
 {
+  buzzer->update();
   getPositionsVelocities();  //update data from motors
   float* torques = PID_Controller_ptr->update();  //calculate our torques with the controller
   updateTorques(torques); //send the torques to our motors
