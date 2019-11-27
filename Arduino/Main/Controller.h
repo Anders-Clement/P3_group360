@@ -36,6 +36,7 @@ public:
     void resetErrorSum();
     float *calculateTorque();
     float *update();
+
 };
 
 #endif

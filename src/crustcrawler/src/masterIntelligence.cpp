@@ -284,6 +284,7 @@ void masterIntelligence::handleGesture(){
 
 
 // setting the joint limits
+
   if (pos[1] > 1.9)
     pos[1] = 1.9;
   else if (pos[1] < -1.9)
@@ -292,16 +293,14 @@ void masterIntelligence::handleGesture(){
     pos[2] = -3.14/2.0;
   else if (pos[2] > 3.14/2.0)
     pos[2] = 3.14/2.0;
-  if (pos[3] > 3.14/2.0)
-    pos[3] = 3.14/2.0;
-  else if (pos[3] < 0.0)
+  if (pos[3] < -3.14/2.0)
+    pos[3] = -3.14/2.0;
+  else if (pos[3] > 0.0)
     pos[3] = 0.0;
-  if (pos[4] < -3.14/2.0)
-    pos[4] = -3.14/2.0;
-  else if (pos[4] > 0.0)
+  if (pos[4] > 3.14/2.0)
+    pos[4] = 3.14/2.0;
+  else if (pos[4] < 0.0)
     pos[4] = 0.0;
-
-
 
   // Joint state publisher for RVIZ debugging
   joint_state_msg.header.stamp = ros::Time::now();

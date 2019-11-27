@@ -9,7 +9,6 @@
 
 #define buzz_pin 11
 
-
 ProtocolController* controler_ptr;
 PID_Controller *PID_Controller_ptr;
 Display *display_ptr;   //Display controller
@@ -22,7 +21,6 @@ void enableTorque(); //on all motors
 void disableTorque(); //on all motors
 void updateTorques(float* torqueArray); //sets torques on all motors
 
-
 //ROS specific data:
 std_msgs::Int16MultiArray angleVel_msg;
 void trajectory_sub(const std_msgs::Int16MultiArray& incoming_msg); //subscribes to the trajectory topic
@@ -34,7 +32,6 @@ ros::Publisher getAngleVel_pub("/crustcrawler/getAngleVel", &angleVel_msg);
 ros::Subscriber<std_msgs::Int16MultiArray> trajectorySubscriber("/crustcrawler/trajectory", &trajectory_sub);
 ros::Subscriber<std_msgs::Int16> commandSub("/crustcrawler/command", &command_callback);
 ros::Subscriber<std_msgs::Int16> modeSub("/crustcrawler/mode", &mode_callback);
-
 
 float motorOffsets[5] = {0, M_PI / 4.0, M_PI, M_PI * (3.0 / 4.0), M_PI};
 float joint0_offset = 0;
@@ -62,7 +59,7 @@ void setup()
   display_ptr->setMode("0: WFI");
   PID_Controller_ptr = new PID_Controller(thetas, velocities);
   buzzer = new Buzzer(buzz_pin);
-  buzzer->buzz(750);
+  //buzzer->buzz(750);
 
   nh.getHardware()->setBaud(57600);
   nh.initNode();
@@ -74,7 +71,6 @@ void setup()
   delay(1000);
   display_ptr->setConnect("False"); //connected with PC (usually has not happened yet)
 
-
   //allocate memory for angleVel message
   angleVel_msg.data = (int*) malloc(sizeof(int) * 10);
   //set length of msg, otherwise everything will not be sent
@@ -82,6 +78,7 @@ void setup()
 
   buzzer->update();
   display_ptr->setStatus("Boot Act");
+
   bool init = false;
   while(!init)
   {
@@ -90,17 +87,13 @@ void setup()
       if(!controler_ptr->ping(i))
         init = false;
   }
+
   setPWMMode(); //set motors to pwm mode
   setOffset = true;
   getPositionsVelocities();
 
   int tmp_trajectory[15] = {thetas[0]*1000.0, 0,0, thetas[1]*1000.0, 0,0,thetas[2]*1000.0, 0,0,thetas[3]*1000.0, 0,0,thetas[4]*1000.0, 0,0,};
   PID_Controller_ptr->trajectoryFunk(tmp_trajectory); //saves the trajectory
-
-  /*
-  float temp_zeros[5] = {0, 0, 0, 0, 0}; //set initial torque to 0
-  updateTorques(temp_zeros); //send 0 torque to motors
-  */
   float* torques = PID_Controller_ptr->update();  //calculate our tf torques with the controller
   enableTorque();
   updateTorques(torques); //send the torques to our motors

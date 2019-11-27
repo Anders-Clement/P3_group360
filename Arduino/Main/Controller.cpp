@@ -17,9 +17,12 @@ void PID_Controller::trajectoryFunk(int* trajectoryAngles_incomming)
     accDesired[i] = (float)(trajectoryAngles_incomming[dataindex + 2] /1000.0);
   }
 
+  /*
   for (int i = 3; i < 5; i++) {
     posDesired[i] = -posDesired[i];
   }
+  */
+
 
 }
 // calculates error of desired - actual position

@@ -155,15 +155,14 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(myo_com src/myo_com.cpp)
-target_link_libraries(myo_com ${catkin_LIBRARIES})
-add_dependencies(myo_com crustcrawler_generate_messages_cpp)
+add_executable(master_joy src/master_joy.cpp src/masterIntelligence.cpp)
+target_link_libraries(master_joy ${catkin_LIBRARIES})
+add_dependencies(master_joy crustcrawler_generate_messages_cpp)
 
 
-
-add_executable(master src/master.cpp src/masterIntelligence.cpp)
-target_link_libraries(master ${catkin_LIBRARIES})
-add_dependencies(master crustcrawler_generate_messages_cpp)
+add_executable(master_myo src/master_myo.cpp src/masterIntelligence.cpp)
+target_link_libraries(master_myo ${catkin_LIBRARIES})
+add_dependencies(master_myo crustcrawler_generate_messages_cpp)
 
 add_executable(arduino_serial src/arduino_serial.cpp)
 target_link_libraries(arduino_serial ${catkin_LIBRARIES})

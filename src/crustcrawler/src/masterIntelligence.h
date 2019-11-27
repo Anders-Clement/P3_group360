@@ -8,8 +8,8 @@
 #include <std_msgs/UInt8.h>
 #include "math.h"
 
-#define UPDATE_RATE 5
-#define move_pose 0.05
+#define UPDATE_RATE 20
+#define move_pose 0.025
 #define tf 2.0
 
 #ifndef CRUSTCRAWLER_MASTER_H
