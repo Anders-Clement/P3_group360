@@ -254,7 +254,6 @@ void ProtocolController::setTorque(unsigned char address, float torque, float cu
     //Serial.println("setTorque PWM_value > 885, too high torque or omega!, clamping to 885");
     PWM_value = 800;
   }
-
   unsigned char SendingArray[5];
   SendingArray[0] = 0x03; //Write Commando
   SendingArray[1] = 0x64; //mem address (address 100)
