@@ -109,6 +109,7 @@ void setup()
 
 void loop()
 {
+  buzzer->update();
   getPositionsVelocities();  //update data from motors
   float* torques = PID_Controller_ptr->update();  //calculate our torques with the controller
   updateTorques(torques); //send the torques to our motors
