@@ -21,15 +21,21 @@ start_time = 0.0
 def callbackActual(data):
     global start_time
 
-    if (start_time < 0.01):
+    if not running:
+        return
+
+    if start_time < 0.01 or rospy.get_rostime().to_sec() - start_time == 0:
         return
 
     actualPos[0].append(rospy.get_rostime().to_sec() - start_time)
     actualVel[0].append(rospy.get_rostime().to_sec() - start_time)
+    actualAcc[0].append(rospy.get_rostime().to_sec() - start_time)
 
     for i in range(0,5):
         actualPos[i+1].append(float(data.data[0 + (i*2)]/1000.0))
         actualVel[i+1].append(float(data.data[1 + (i*2)]/1000.0))
+
+
 
 
 def listener():
@@ -44,10 +50,16 @@ def listener():
     rate = rospy.Rate(10.0)
     rospy.sleep(rospy.Duration.from_sec(2))
 
-    traj_start = [0, 0, 0, 0, 0]
-    traj_end = [1, 1, 1, 1, 1]
+    running = True
 
-    tf = 20.0
+    if True:
+        traj_start = [0, 0, 0, 0, 0]
+        traj_end = [1, 1, -1, 1, -1]
+    else:
+        traj_start = [1, 1, -1, 1, -1]
+        traj_end = [0, 0, 0, 0, 0]
+
+    tf = 10.0
     a = [[0 for y in range(5)] for x in range(5)]
     start_time = rospy.get_rostime().to_sec()
     indexForArray = 0
@@ -87,12 +99,39 @@ def listener():
         indexForArray = indexForArray + 1
         rate.sleep()
 
-    fig, ax = plt.subplots(5, sharey='col')
+    running = False
+
+    for j in range(0,actualVel[0].__len__()):
+        for i in range(1,6):    
+            if j == 0:
+                actualAcc[i].append((actualVel[i][j] - 0)/(actualVel[0][j+1]-actualVel[0][j]))
+            elif j == actualVel[0].__len__():
+                actualAcc[i].append((0 - actualVel[i][j-1])/(actualVel[0][j]-actualVel[0][j-1]))
+            else:
+                actualAcc[i].append((actualVel[i][j] - actualVel[i][j-1]) / (actualVel[0][j]-actualVel[0][j-1]))
+
+
+    fig, ax = plt.subplots(5, 3, sharey='col',sharex='all')
     
     for i in range(1,6):
-        ax[i-1].plot(actualPos[0], actualPos[i], color='red', label='Theta')
-        ax[i-1].plot(pos[0], pos[i], color='blue', label='setTheta')
-        ax[i-1].set_title("Joint " + str(i))
+        ax[i-1][0].plot(actualPos[0], actualPos[i], color='red', label='Theta')
+        ax[i-1][0].plot(pos[0], pos[i], color='blue', label='setTheta')
+        ax[i-1][0].set_ylabel("Joint " + str(i))
+        ax[i-1][0].grid(color='k', alpha=0.3, linestyle='-', linewidth=0.5)
+
+    for i in range(1,6):
+        ax[i-1][1].plot(actualVel[0], actualVel[i], color='red', label='ThetaDot')
+        ax[i-1][1].plot(vel[0], vel[i], color='blue', label='setThetaDot')
+        ax[i-1][1].grid(color='k', alpha=0.3, linestyle='-', linewidth=0.5)
+
+    for i in range(1,6):
+        ax[i-1][2].plot(actualAcc[0], actualAcc[i], color='red', label='ThetaDotDot')
+        ax[i-1][2].plot(acc[0], acc[i], color='blue', label='setThetaDotDot')
+        ax[i-1][2].grid(color='k', alpha=0.3, linestyle='-', linewidth=0.5)
+
+    ax[0][0].set_title("position")
+    ax[0][1].set_title("velocity")
+    ax[0][2].set_title("acceleration")
 
     
     plt.show()
