@@ -80,6 +80,7 @@ void setup()
   //set length of msg, otherwise everything will not be sent
   angleVel_msg.data_length = 10;
 
+  buzzer->update();
   display_ptr->setStatus("Boot Act");
   bool init = false;
   while(!init)
