@@ -2,7 +2,7 @@
 #define PROTOCAL_H
 #include <Arduino.h>
 
-#define RTS_Pin 11
+#define RTS_Pin 9
 #define motorBaudrate 1000000
 
 
