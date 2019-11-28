@@ -47,6 +47,24 @@ void masterIntelligence::joy_callback(const sensor_msgs::Joy::ConstPtr& msg)
       if(msg->buttons[i + 13])
         gesture = i + 2; //0:unknown, 1:rest, 2-5 - wanted gestures
   }
+  if(mode == 1)
+  {
+    if(gesture == 2)
+      gesture = 3;
+    else if(gesture == 3)
+      gesture = 2;
+  }
+  else if(mode == 2)
+  {
+    if(gesture == 2)
+      gesture = 5;
+    else if(gesture == 3)
+      gesture = 4;
+    else if(gesture == 4)
+      gesture = 3;
+    else if(gesture == 5)
+      gesture = 2;
+  }
   //ROS_INFO_STREAM(gesture);
 }
 
