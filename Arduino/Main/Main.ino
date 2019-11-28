@@ -123,9 +123,13 @@ void loop()
     else
       display_ptr->setConnect("False");
   }
-  else if (checkTimer > 200) {
+  else if (checkTimer > 30) {
     if(!nh.connected()) //check if disconnected from ROS
+    {
       rosConnected = false;
+      int tmp_trajectory[15] = {thetas[0]*1000.0, 0,0, thetas[1]*1000.0, 0,0,thetas[2]*1000.0, 0,0,thetas[3]*1000.0, 0,0,thetas[4]*1000.0, 0,0,};
+      PID_Controller_ptr->trajectoryFunk(tmp_trajectory); //saves the trajectory
+    }
 
     checkTimer = 0;
   }
