@@ -53,7 +53,7 @@ def listener():
     running = True
 
     traj_start = [0, 0, 0, 0, 0]
-    traj_end = [1, 1, 1, 1, -1]
+    traj_end = [1, 1, 1, 1, -1]      
 
 
     tf = 10.0
@@ -78,7 +78,7 @@ def listener():
         
         for i in range(0, 5): # calculates the theta, thetadot and thetadotdot for all joints
             pos[i].append(a[0][i] + a[1][i] * t + a[2][i] * pow(t, 2.0) + a[3][i] * pow(t, 3.0))
-            vel[i].append(a[1][i] + 2.0 * a[2][i] * t + 3.0 * a[3][i] * pow(t, 2.0))
+            vel[i].append(-(a[1][i] + 2.0 * a[2][i] * t + 3.0 * a[3][i] * pow(t, 2.0)))
             acc[i].append(2.0 * a[2][i] + 6.0 * a[3][i] * t)
         
         pub_array = Int16MultiArray()
@@ -121,12 +121,17 @@ def listener():
         ax[i][2].plot(actualTime, actualAcc[i], color='red', label='ThetaDotDot')
         ax[i][2].plot(time, acc[i], color='blue', label='setThetaDotDot')
         ax[i][2].grid(color='k', alpha=0.3, linestyle='-', linewidth=0.5)
+        ax[i][2].set_ylim((-1.5, 1.5))
 
     ax[0][0].set_title("position")
     ax[0][1].set_title("velocity")
     ax[0][2].set_title("acceleration")
 
     plt.show()
+    
+    #for i in range(0,15):
+    #    pub_array.data[i] = 0
+    #traj_pub.publish(pub_array)
 
     return
 
