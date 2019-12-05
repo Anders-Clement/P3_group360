@@ -1,6 +1,6 @@
 close all
 
-table2plot = velocities_mtm;
+table2plot = velocities_base;
 
 array2plot = table2array(table2plot(1,:));
 
@@ -14,4 +14,4 @@ x = 0:size(t,2);
 y = linspace(250,250,size(x,2));
 plot(x,y);
 xlim([0 size(t,2)]);
-ylim([0 270]);
+%ylim([0 270]);
