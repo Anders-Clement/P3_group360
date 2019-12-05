@@ -59,7 +59,7 @@ void setup()
   display_ptr->setMode("0: WFI");
   PID_Controller_ptr = new PID_Controller(thetas, velocities);
   buzzer = new Buzzer(buzz_pin);
-  //buzzer->buzz(750);
+  buzzer->buzz(750);
 
   nh.getHardware()->setBaud(57600);
   nh.initNode();
@@ -68,7 +68,7 @@ void setup()
   nh.subscribe(commandSub);
   nh.subscribe(modeSub);
 
-  delay(1000);
+  delay(750);
   display_ptr->setConnect("False"); //connected with PC (usually has not happened yet)
 
   //allocate memory for angleVel message
