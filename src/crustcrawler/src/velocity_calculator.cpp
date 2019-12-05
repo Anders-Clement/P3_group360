@@ -24,8 +24,6 @@ Vector3 operator-(Vector3 a, Vector3 b)
 }
 
 Vector3 f_kin(Vector3 thetas);
-void check_for_zero(Vector3 &input);
-
 void angleVel_callback(const std_msgs::Int16MultiArray::ConstPtr &msg);
 
 
@@ -96,19 +94,6 @@ void angleVel_callback(const std_msgs::Int16MultiArray::ConstPtr &msg)
   
   lastPos = curPos;
   lastTime = now;
-}
-
-
-
-void check_for_zero(Vector3 &input)
-{
-  float zero_value = 0.0001;
-  if (input.x == 0.0)
-    input.x = zero_value;
-  if (input.y == 0.0)
-    input.y = zero_value;
-  if (input.z == 0.0)
-    input.z = zero_value;
 }
 
 Vector3 f_kin(Vector3 thetas)
