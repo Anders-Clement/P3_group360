@@ -290,7 +290,7 @@ void masterIntelligence::handleGesture(){
           }
           
           double maxDistance = 0;
-          for(int i = 0; i < 5; i++)
+          for(int i = 0; i < 3; i++)
           {
             double dist = abs(goalang[i] - pos[i]);
             if(dist > maxDistance)
