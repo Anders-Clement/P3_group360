@@ -11,8 +11,6 @@
 
 #define UPDATE_RATE 20
 #define move_pose 0.025
-#define tf 2.0
-
 #ifndef CRUSTCRAWLER_MASTER_H
 #define CRUSTCRAWLER_MASTER_H
 
@@ -30,6 +28,8 @@ public:
     float goalvel[5];
     int mode = 0;
     bool key_control = false;
+
+    double tf = 8.0;
 
     float pos[5] = {0};
     float vel[5] = {0};

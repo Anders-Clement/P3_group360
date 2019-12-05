@@ -182,7 +182,7 @@ void ProtocolController::setOperatingMode(unsigned char address, unsigned char m
   SendingArray[2] = 0x00; //Filed 11 - higher
   SendingArray[3] = mode;
 
-  //Serial.println(writeFunction(address, SendingArray, 4));
+  writeFunction(address, SendingArray, 4);
 }
 
 void ProtocolController::setGoalCurrent(unsigned char address, short current) {

@@ -89,6 +89,7 @@ void setup()
   }
 
   setPWMMode(); //set motors to pwm mode
+
   setOffset = true;
   getPositionsVelocities();
 
