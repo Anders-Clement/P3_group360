@@ -325,32 +325,24 @@ void masterIntelligence::handleGesture(){
           switch (gesture){
             case 1:{ break;}
             case 2:{ // sets goal position to the corresponding macro
-                      gen_time = ros::Time::now(); // resets timer
-
               for (size_t i = 0; i < 5; i++)
                 goalang[i] = 0.0;
               gen_time = ros::Time::now(); // resets timer
               break;
             }
             case 3:{ // sets goal position to the corresponding macro
-                      gen_time = ros::Time::now(); // resets timer
-
               for (size_t i = 0; i < 5; i++)
                 goalang[i] = macro[1][i];
               gen_time = ros::Time::now(); // resets timer
               break;
             }
             case 4:{ // sets goal position to the corresponding macro
-                      gen_time = ros::Time::now(); // resets timer
-
               for (size_t i = 0; i < 5; i++)
                 goalang[i] = macro[2][i];
               gen_time = ros::Time::now(); // resets timer
               break;
             }
             case 5:{ // sets goal position to the corresponding macro
-                      gen_time = ros::Time::now(); // resets timer
-
               for (size_t i = 0; i < 5; i++)
                 goalang[i] = macro[3][i];
               gen_time = ros::Time::now(); // resets timer
