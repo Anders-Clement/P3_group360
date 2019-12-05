@@ -253,7 +253,6 @@ void masterIntelligence::handleGesture(){
       // mode 4 can recall saved macros by using the gesture is have been saved under
       case 4:{
         if (ros::Time::now().toSec() - gen_time.toSec() >= tf){ // to ensure this mode only updates once per tf we check the timer
-          gen_time = ros::Time::now(); // resets timer
           for (size_t i = 0; i < 5; i++){ // sets the goal position to current position
             goalang[i] = pos[i];
             goalvel[i] = 0.0;
@@ -261,26 +260,48 @@ void masterIntelligence::handleGesture(){
           switch (gesture){
             case 1:{ break;}
             case 2:{ // sets goal position to the corresponding macro
+                      gen_time = ros::Time::now(); // resets timer
+
               for (size_t i = 0; i < 5; i++)
                 goalang[i] = 0.0;
               break;
             }
             case 3:{ // sets goal position to the corresponding macro
+                      gen_time = ros::Time::now(); // resets timer
+
               for (size_t i = 0; i < 5; i++)
                 goalang[i] = macro[1][i];
               break;
             }
             case 4:{ // sets goal position to the corresponding macro
+                      gen_time = ros::Time::now(); // resets timer
+
               for (size_t i = 0; i < 5; i++)
                 goalang[i] = macro[2][i];
               break;
             }
             case 5:{ // sets goal position to the corresponding macro
+                      gen_time = ros::Time::now(); // resets timer
+
               for (size_t i = 0; i < 5; i++)
                 goalang[i] = macro[3][i];
               break;
             }
           }
+          
+          double maxDistance = 0;
+          for(int i = 0; i < 5; i++)
+          {
+            double dist = abs(goalang[i] - pos[i]);
+            if(dist > maxDistance)
+              maxDistance = dist;
+          }
+
+          tf = maxDistance * 3.0; 
+
+          if(tf < 2)
+            tf = 2;
+          
           for (size_t i = 0; i < 5; i++){ // calculates the 'a' coefficients using goal ang and vel
               a[0][i] = pos[i];
               a[1][i] = 0.0;

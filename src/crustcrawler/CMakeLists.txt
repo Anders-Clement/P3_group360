@@ -168,6 +168,10 @@ add_executable(arduino_serial src/arduino_serial.cpp)
 target_link_libraries(arduino_serial ${catkin_LIBRARIES})
 add_dependencies(arduino_serial crustcrawler_generate_messages_cpp)
 
+add_executable(velocity_calculator src/velocity_calculator.cpp)
+target_link_libraries(velocity_calculator ${catkin_LIBRARIES})
+add_dependencies(velocity_calculator crustcrawler_generate_messages_cpp)
+
 
 #############
 ## Install ##
