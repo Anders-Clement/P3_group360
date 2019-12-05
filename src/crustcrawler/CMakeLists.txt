@@ -164,6 +164,10 @@ add_executable(master_myo src/master_myo.cpp src/masterIntelligence.cpp)
 target_link_libraries(master_myo ${catkin_LIBRARIES})
 add_dependencies(master_myo crustcrawler_generate_messages_cpp)
 
+add_executable(master_key src/master_key.cpp src/masterIntelligence.cpp)
+target_link_libraries(master_key ${catkin_LIBRARIES})
+add_dependencies(master_key crustcrawler_generate_messages_cpp)
+
 add_executable(arduino_serial src/arduino_serial.cpp)
 target_link_libraries(arduino_serial ${catkin_LIBRARIES})
 add_dependencies(arduino_serial crustcrawler_generate_messages_cpp)

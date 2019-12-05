@@ -10,12 +10,15 @@ masterIntelligence::masterIntelligence(ros::NodeHandle* n, int type){
   mode_pub = n->advertise<std_msgs::Int16>("/crustcrawler/mode", 10);
   gesture_pub = n->advertise<std_msgs::Int16>("/crustcrawler/gesture", 10);
 
-  get_angle_vel = n->subscribe("/crustcrawler/getAngleVel", 10, &masterIntelligence::get_angle_vel_callback, this);
+  get_angle_vel = n->subscribe("/crustcrawler/getAngleVel", 2, &masterIntelligence::get_angle_vel_callback, this);
 
   if(type == 0)
-    gest_str_sub = n->subscribe("/myo_raw/myo_gest_str", 10, &masterIntelligence::myo_raw_gest_str_callback, this);
+    gest_str_sub = n->subscribe("/myo_raw/myo_gest_str", 2, &masterIntelligence::myo_raw_gest_str_callback, this);
   else if(type == 1)
-    joy_sub = n->subscribe("/joy", 10, &masterIntelligence::joy_callback, this);
+    joy_sub = n->subscribe("/joy", 2, &masterIntelligence::joy_callback, this);
+  else if(type == 2){
+    key_sub = n->subscribe("/cmd_vel", 2, &masterIntelligence::key_callback, this);
+    key_control = true;}
   else
     ROS_INFO_STREAM("UNKNOWN TYPE FOR MASTERINTELLIGENCE!");
 
@@ -23,11 +26,22 @@ masterIntelligence::masterIntelligence(ros::NodeHandle* n, int type){
     ros::spinOnce();
 }
 
+/*
+void masterIntelligence::getChar(){
+  static struct termios oldt, newt; 
+  tcgetattr( STDIN_FILENO, &oldt);           // save old settings
+  newt = oldt;
+  newt.c_lflag &= ~(ICANON);                 // disable buffering      
+  newt.c_cc[VMIN] = 0; newt.c_cc[VTIME] = 0;
+  tcsetattr( STDIN_FILENO, TCSANOW, &newt);  // apply new settings
 
-void masterIntelligence::joy_callback(const sensor_msgs::Joy::ConstPtr& msg)
-{
-  if(msg->buttons[0]) //change mode with x button
-  {
+  int c = getchar();  // read character (non-blocking)
+
+  tcsetattr( STDIN_FILENO, TCSANOW, &oldt);  // restore old settings
+  
+  gesture = 1;
+
+  if (c == 'x'){ //change mode with x button
     mode++;
     if(mode > 4)
       mode = 1;
@@ -36,6 +50,57 @@ void masterIntelligence::joy_callback(const sensor_msgs::Joy::ConstPtr& msg)
     mode_msg.data = mode;
     mode_pub.publish(mode_msg);
     ROS_INFO_STREAM(mode);
+
+    return;
+  }
+
+  if (c == 'a')
+    gesture = 2;
+  else if (c == 'd')
+    gesture = 3;
+  else if (c == 'w')
+    gesture = 4;
+  else if (c == 's')
+    gesture = 5;
+  ROS_INFO_STREAM(gesture);
+}*/
+
+
+void masterIntelligence::key_callback(const geometry_msgs::Twist::ConstPtr& msg){
+  gesture = 1;
+  if(msg->linear.x == -0.5 &&  msg->angular.z == 1){ //change mode with '.' button{
+    mode++;
+    if(mode > 4)
+      mode = 1;
+
+    mode_msg.data = mode;
+    mode_pub.publish(mode_msg);
+    ROS_INFO_STREAM("mode: " << mode);
+
+    return;
+  }
+  else if (msg->linear.x == 0.5 && msg->angular.z == 0)
+    gesture = 2;
+  else if (msg->linear.x == -0.5 && msg->angular.z == 0)
+    gesture = 3;
+  else if (msg->linear.x == 0 && msg->angular.z == 1)
+    gesture = 4;
+  else if (msg->linear.x == 0 && msg->angular.z == -1)
+    gesture = 5;
+  ROS_INFO_STREAM("gesture:" << gesture);
+}
+
+
+void masterIntelligence::joy_callback(const sensor_msgs::Joy::ConstPtr& msg){
+  if(msg->buttons[0]) //change mode with x button
+  {
+    mode++;
+    if(mode > 4)
+      mode = 1;
+
+    mode_msg.data = mode;
+    mode_pub.publish(mode_msg);
+    ROS_INFO_STREAM("mode: " << mode);
 
     return;
   }
@@ -253,7 +318,6 @@ void masterIntelligence::handleGesture(){
       // mode 4 can recall saved macros by using the gesture is have been saved under
       case 4:{
         if (ros::Time::now().toSec() - gen_time.toSec() >= tf){ // to ensure this mode only updates once per tf we check the timer
-          gen_time = ros::Time::now(); // resets timer
           for (size_t i = 0; i < 5; i++){ // sets the goal position to current position
             goalang[i] = pos[i];
             goalvel[i] = 0.0;
@@ -263,29 +327,33 @@ void masterIntelligence::handleGesture(){
             case 2:{ // sets goal position to the corresponding macro
               for (size_t i = 0; i < 5; i++)
                 goalang[i] = 0.0;
+              gen_time = ros::Time::now(); // resets timer
               break;
             }
             case 3:{ // sets goal position to the corresponding macro
               for (size_t i = 0; i < 5; i++)
                 goalang[i] = macro[1][i];
+              gen_time = ros::Time::now(); // resets timer
               break;
             }
             case 4:{ // sets goal position to the corresponding macro
               for (size_t i = 0; i < 5; i++)
                 goalang[i] = macro[2][i];
+              gen_time = ros::Time::now(); // resets timer
               break;
             }
             case 5:{ // sets goal position to the corresponding macro
               for (size_t i = 0; i < 5; i++)
                 goalang[i] = macro[3][i];
+              gen_time = ros::Time::now(); // resets timer
               break;
             }
           }
           for (size_t i = 0; i < 5; i++){ // calculates the 'a' coefficients using goal ang and vel
-              a[0][i] = pos[i];
-              a[1][i] = 0.0;
-              a[2][i] = 3.0 / (pow(tf, 2.0)) * (goalang[i] - pos[i]) - 2.0 / tf * 0.0 - 1.0 / tf * goalvel[i];
-              a[3][i] = -2.0 / (pow(tf, 3.0)) * (goalang[i] - pos[i]) + 1.0 / (pow(tf, 2.0)) * (goalvel[i] + 0.0);
+            a[0][i] = pos[i];
+            a[1][i] = 0.0;
+            a[2][i] = 3.0 / (pow(tf, 2.0)) * (goalang[i] - pos[i]) - 2.0 / tf * 0.0 - 1.0 / tf * goalvel[i];
+            a[3][i] = -2.0 / (pow(tf, 3.0)) * (goalang[i] - pos[i]) + 1.0 / (pow(tf, 2.0)) * (goalvel[i] + 0.0);
           }
         }
         // calculates the theta, thetadot and thetadotdot for all joints
@@ -353,4 +421,6 @@ void masterIntelligence::handleGesture(){
   }
   // publish trajectories_msg
   trajectory_pub.publish(trajectories_msg);
+  if (key_control)
+    gesture = 1;
 }

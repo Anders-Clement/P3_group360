@@ -7,6 +7,7 @@
 #include "std_msgs/Int16.h"
 #include <std_msgs/UInt8.h>
 #include "math.h"
+#include <geometry_msgs/Twist.h>
 
 #define UPDATE_RATE 20
 #define move_pose 0.025
@@ -28,6 +29,7 @@ public:
     float goalang[5];
     float goalvel[5];
     int mode = 0;
+    bool key_control = false;
 
     float pos[5] = {0};
     float vel[5] = {0};
@@ -37,6 +39,7 @@ public:
     void myo_raw_gest_str_callback(const std_msgs::String::ConstPtr& msg);
     void get_angle_vel_callback(const std_msgs::Int16MultiArray::ConstPtr& msg);
     void joy_callback(const sensor_msgs::Joy::ConstPtr& msg);
+    void key_callback(const geometry_msgs::Twist::ConstPtr& msg);
 
     void handleGesture();
 
@@ -55,6 +58,7 @@ private:
     ros::Subscriber gest_str_sub;
     ros::Subscriber get_angle_vel;
     ros::Subscriber joy_sub;
+    ros::Subscriber key_sub;
 
     // message declarations
     std_msgs::Int16MultiArray trajectories_msg;

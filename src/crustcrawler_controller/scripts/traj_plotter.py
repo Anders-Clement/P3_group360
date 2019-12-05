@@ -47,16 +47,38 @@ def listener():
     rospy.init_node('listener', anonymous=True)
     rospy.Subscriber('/crustcrawler/getAngleVel',Int16MultiArray, callbackActual)
     traj_pub = rospy.Publisher('/crustcrawler/trajectory', Int16MultiArray,queue_size=10)
-    rate = rospy.Rate(10.0)
+    rate = rospy.Rate(20.0)
     rospy.sleep(rospy.Duration.from_sec(2))
 
     running = True
 
-    traj_start = [0, 0, 0, 0, 0]
-    traj_end = [1, 1, 1, 1, -1]      
+    if True:
+        traj_start = [0, 0, 0, 0, 0]
+        traj_end = [1, 1, 1, -1, 1]
+    else:
+        traj_start = [1, 1, 1, -1, 1]
+        traj_end = [0, 0, 0, 0, 0]
+
+    '''
+    # From low to other side low
+    if True:
+        traj_start = [0, 1.6, -0.5, 0, 0]
+        traj_end = [3.14, 1.4, -1.1, -1.4, 1.4]
+    else:
+        traj_start = [3.14, 1.4, -1.1, -1.4, 1.4]
+        traj_end = [0, 1.6, -0.5, 0, 0]
+    '''
+    '''
+    if True:
+        traj_start = [0, -1, -1, 0, 0]
+        traj_end = [0, 1, 1, -1.4, 1.4]
+    else:
+        traj_start = [0, 1, 1, -1.4, 1.4]
+        traj_end = [0, -1, -1, 0, 0]
+    '''
 
 
-    tf = 10.0
+    tf = 5.0
     a = [[0 for y in range(5)] for x in range(5)]
     start_time = rospy.get_rostime().to_sec()
     indexForArray = 0
@@ -78,7 +100,7 @@ def listener():
         
         for i in range(0, 5): # calculates the theta, thetadot and thetadotdot for all joints
             pos[i].append(a[0][i] + a[1][i] * t + a[2][i] * pow(t, 2.0) + a[3][i] * pow(t, 3.0))
-            vel[i].append(-(a[1][i] + 2.0 * a[2][i] * t + 3.0 * a[3][i] * pow(t, 2.0)))
+            vel[i].append(a[1][i] + 2.0 * a[2][i] * t + 3.0 * a[3][i] * pow(t, 2.0))
             acc[i].append(2.0 * a[2][i] + 6.0 * a[3][i] * t)
         
         pub_array = Int16MultiArray()
@@ -101,7 +123,7 @@ def listener():
             if j == 0:
                 actualAcc[i].append(actualVel[i][j]/actualTime[j])
             else:
-                actualAcc[i].append((actualVel[i][j] - actualVel[i][j-1]) / (actualTime[j] - actualTime[j-1]))
+                actualAcc[i].append((abs(actualVel[i][j]) - abs(actualVel[i][j-1])) / (actualTime[j] - actualTime[j-1]))
 
 
     fig, ax = plt.subplots(5, 3, sharey='col',sharex='all')
@@ -116,12 +138,13 @@ def listener():
         ax[i][1].plot(actualTime, actualVel[i], color='red', label='ThetaDot')
         ax[i][1].plot(time, vel[i], color='blue', label='setThetaDot')
         ax[i][1].grid(color='k', alpha=0.3, linestyle='-', linewidth=0.5)
+        #ax[i][1].set_ylim((-0.5, 0.5))
 
     for i in range(0,5):
         ax[i][2].plot(actualTime, actualAcc[i], color='red', label='ThetaDotDot')
         ax[i][2].plot(time, acc[i], color='blue', label='setThetaDotDot')
         ax[i][2].grid(color='k', alpha=0.3, linestyle='-', linewidth=0.5)
-        ax[i][2].set_ylim((-1.5, 1.5))
+        #ax[i][2].set_ylim((-1.5, 1.5))
 
     ax[0][0].set_title("position")
     ax[0][1].set_title("velocity")
