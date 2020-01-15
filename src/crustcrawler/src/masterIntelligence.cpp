@@ -152,7 +152,7 @@ void masterIntelligence::myo_raw_gest_str_callback(const std_msgs::String::Const
   // if the gesture held is "THUMB_TO_PINKY" then change mode from 1 to 5 and then reset to 1
   if (gesture == 6){
     if (mode == 4)
-      mode = 1;
+      mode = 0;
     else
       mode += 1;
     ROS_INFO_STREAM(mode);
@@ -372,7 +372,8 @@ void masterIntelligence::handleGesture(){
       }
       // mode 4 can recall saved macros by using the gesture is have been saved under
       case 4:{
-        if (ros::Time::now().toSec() - gen_time.toSec() >= tf){ // to ensure this mode only updates once per tf we check the timer
+        if (ros::Time::now().toSec() - gen_time.toSec() >= tf)
+        { // to ensure this mode only updates once per tf we check the timer
           for (size_t i = 0; i < 5; i++){ // sets the goal position to current position
             goalang[i] = pos[i];
             goalvel[i] = 0.0;

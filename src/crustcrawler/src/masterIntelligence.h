@@ -25,7 +25,7 @@ public:
     //ros::Time count_time;
     float a[4][5] = {0};
     bool update_angle_vel = true;
-    float macro[4][4] = {0};
+    float macro[4][5] = {0};
     float goalang[5];
     float goalvel[5];
     int mode = 0;
