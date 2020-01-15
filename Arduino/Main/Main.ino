@@ -187,6 +187,9 @@ void mode_callback(const std_msgs::Int16& msg)
 {
   buzzer->buzz(10, 1);
   switch (msg.data) {
+    case 0:
+      display_ptr->setMode("0: Waiting");
+    break;
     case 1:
       display_ptr->setMode("1: Bas.Sho.");
     break;

@@ -123,11 +123,19 @@ float* PID_Controller::calculateTorque()
 
   float V3 = 0.5 * L2 * Lc3 * m3 * pow(velRobot[0], 2) * sin(2 * correctedPosOne + posRobot[2]) + 0.5 * L2 * Lc3 * m3 * pow(velRobot[0], 2) * sin(posRobot[2]) + 1.0 * L2 * Lc3 * m3 * pow(velRobot[1], 2) * sin(posRobot[2]) + 0.5 * L2 * Lcp * mp * pow(velRobot[0], 2) * sin(2 * correctedPosOne + posRobot[2]) + 0.5 * L2 * Lcp * mp * pow(velRobot[0], 2) * sin(posRobot[2]) + 1.0 * L2 * Lcp * mp * pow(velRobot[1], 2) * sin(posRobot[2]) + 0.5 * pow(Lc3, 2) * m3 * pow(velRobot[0], 2) * sin(2 * correctedPosOne + 2 * posRobot[2]) + 0.5 * pow(Lcp, 2) * mp * pow(velRobot[0], 2) * sin(2 * correctedPosOne + 2 * posRobot[2]) + 0.00011272126500000001 * pow(velRobot[0], 2) * sin(2 * correctedPosOne + 2 * posRobot[2]) - 5.6052299999999997e-6 * pow(velRobot[0], 2) * cos(2 * correctedPosOne + 2 * posRobot[2]);
 
+  
   tau[0] = H11 * tmark[0] + H12 * tmark[0] + H13 * tmark[0] + G1 + V1;
   tau[1] = H21 * tmark[1] + H22 * tmark[1] + H23 * tmark[1] + G2 + V2;
   tau[2] = H31 * tmark[2] + H32 * tmark[2] + H33 * tmark[2] + G3 + V3;
   tau[3] = tmark[3] * 0.0004618954*100;
   tau[4] = tmark[4] * 0.0004618954*100;
+  /*
+  tau[0] = G1 + V1;
+  tau[1] = G2 + V2;
+  tau[2] = G3 + V3;
+  tau[3] = 0;
+  tau[4] = 0;
+  */
 
   //    FRICTION, v_fric is viscous friction, c_fric is coulumb friction
   //    Values are guesses, be careful!
