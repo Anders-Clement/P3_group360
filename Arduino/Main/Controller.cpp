@@ -129,6 +129,24 @@ float* PID_Controller::calculateTorque()
   tau[3] = tmark[3] * 0.0004618954*100;
   tau[4] = tmark[4] * 0.0004618954*100;
 
+  //    FRICTION, v_fric is viscous friction, c_fric is coulumb friction
+  //    Values are guesses, be careful!
+  
+  float v_fric[5] = {0.05, 0.0, 0.0, 0.0, 0.0};
+  float c_fric[5] = {0.04, 0.0, 0.0, 0.0, 0.0};
+
+  for (size_t i = 0; i < 3; i++) {
+    
+     if(tau[i] > 0)
+      tau[i] += c_fric[i];
+     else
+      tau[i] += c_fric[i];
+    
+
+     tau[i] += velRobot[i]*v_fric[i];
+  }
+  
+
   // clamping part
   const float limit_upper[5] = {1.0, 2.0,1.0, 1.0, 1.0};//OG: {3.0, 4.0, 3.0, 2.0, 2.0};
   const float limit_lower[5] = {-1.0,-2.0,-1.0,-1.0,-1.0};//OG: {-3.0, -4.0, -3.0, -2.0, -2.0};
