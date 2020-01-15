@@ -19,8 +19,10 @@ public:
     masterIntelligence(ros::NodeHandle* n, int type);
     // intialising the virables that will be used
     int gesture = 0;
+    int lastMacroSet;
+    ros::Time lastMacroSetTime;
     ros::Time gen_time;
-    ros::Time count_time;
+    //ros::Time count_time;
     float a[4][5] = {0};
     bool update_angle_vel = true;
     float macro[4][4] = {0};

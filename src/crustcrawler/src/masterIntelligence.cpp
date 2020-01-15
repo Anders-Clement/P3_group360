@@ -251,10 +251,27 @@ void masterIntelligence::handleGesture(){
         break;
       }
       case 3:{ // mode 3 is able to set a the current joint angles macro to a gesture by holding the gesture for 2 seconds
+        if(lastMacroSetTime.toSec() + 1 < ros::Time::now().toSec())
+          lastMacroSet = -1;
+
         switch(gesture){
           case 1:{ break;} // if gesture is rest break
           case 2:{
+            /*
+            if(lastMacroSet != 2)
+            {
+              lastMacroSet = 2;
+              lastMacroSetTime = ros::Time::now();
+              for (size_t i = 0; i < 5; i++) // set the macro to the current position for all joints
+                macro[0][i] = pos[i];
+              ROS_INFO_STREAM("macro 0 set:");
+              vibrate_msg.data = 2;
+              vibrate_pub.publish(vibrate_msg);
+            }
+            */
+            /*
             count_time = ros::Time::now(); // resets counter timer
+            ROS_INFO_STREAM("gesture 3, case 2");
             while (gesture == 2){ // enters a while loop to be able check if the gesture is held
               if(ros::Time::now().toSec() - count_time.toSec() >= 2.0){ // if the gesture is held for 2 sec
                 for (size_t i = 0; i < 5; i++) // set the macro to the current position for all joints
@@ -266,9 +283,21 @@ void masterIntelligence::handleGesture(){
               }
               ros::spinOnce();
             }
+            */
             break;
           }
           case 3:{ // same as case 2 just with gesture 3
+            if(lastMacroSet != 3)
+            {
+              lastMacroSet = 3;
+              lastMacroSetTime = ros::Time::now();
+              for (size_t i = 0; i < 5; i++) // set the macro to the current position for all joints
+                macro[1][i] = pos[i];
+              ROS_INFO_STREAM("macro 1 set:");
+              vibrate_msg.data = 2;
+              vibrate_pub.publish(vibrate_msg);
+            }
+            /*
             count_time = ros::Time::now();
             while (gesture == 3){
               if(ros::Time::now().toSec() - count_time.toSec() >= 2.0){
@@ -281,9 +310,21 @@ void masterIntelligence::handleGesture(){
               }
               ros::spinOnce();
             }
+            */
             break;
           }
           case 4:{ // same as case 2 just with gesture 4
+            if(lastMacroSet != 4)
+            {
+              lastMacroSet = 4;
+              lastMacroSetTime = ros::Time::now();
+              for (size_t i = 0; i < 5; i++) // set the macro to the current position for all joints
+                macro[2][i] = pos[i];
+              ROS_INFO_STREAM("macro 2 set:");
+              vibrate_msg.data = 2;
+              vibrate_pub.publish(vibrate_msg);
+            }
+            /*
             count_time = ros::Time::now();
             while (gesture == 4){
               if(ros::Time::now().toSec() - count_time.toSec() >= 2.0){
@@ -296,9 +337,21 @@ void masterIntelligence::handleGesture(){
               }
               ros::spinOnce();
             }
+            */
             break;
           }
           case 5:{ // same as case 2 just with gesture 5
+            if(lastMacroSet != 5)
+            {
+              lastMacroSet = 5;
+              lastMacroSetTime = ros::Time::now();
+              for (size_t i = 0; i < 5; i++) // set the macro to the current position for all joints
+                macro[3][i] = pos[i];
+              ROS_INFO_STREAM("macro 3 set:");
+              vibrate_msg.data = 2;
+              vibrate_pub.publish(vibrate_msg);
+            }
+          /*
             count_time = ros::Time::now();
             while (gesture == 5){
               if(ros::Time::now().toSec() - count_time.toSec() >= 2.0){
@@ -311,6 +364,7 @@ void masterIntelligence::handleGesture(){
               }
               ros::spinOnce();
             }
+            */
             break;
           }
         }
