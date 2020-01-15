@@ -28,17 +28,17 @@ masterIntelligence::masterIntelligence(ros::NodeHandle* n, int type){
 
 /*
 void masterIntelligence::getChar(){
-  static struct termios oldt, newt; 
+  static struct termios oldt, newt;
   tcgetattr( STDIN_FILENO, &oldt);           // save old settings
   newt = oldt;
-  newt.c_lflag &= ~(ICANON);                 // disable buffering      
+  newt.c_lflag &= ~(ICANON);                 // disable buffering
   newt.c_cc[VMIN] = 0; newt.c_cc[VTIME] = 0;
   tcsetattr( STDIN_FILENO, TCSANOW, &newt);  // apply new settings
 
   int c = getchar();  // read character (non-blocking)
 
   tcsetattr( STDIN_FILENO, TCSANOW, &oldt);  // restore old settings
-  
+
   gesture = 1;
 
   if (c == 'x'){ //change mode with x button
@@ -180,6 +180,7 @@ void masterIntelligence::get_angle_vel_callback(const std_msgs::Int16MultiArray:
       j++;
     }
   }
+  handleGesture();
 }
 
 void masterIntelligence::handleGesture(){
@@ -358,11 +359,11 @@ void masterIntelligence::handleGesture(){
               maxDistance = dist;
           }
 
-          tf = maxDistance * 3.0; 
+          tf = maxDistance * 3.0;
 
           if(tf < 2)
             tf = 2;
-          
+
           for (size_t i = 0; i < 5; i++){ // calculates the 'a' coefficients using goal ang and vel
             a[0][i] = pos[i];
             a[1][i] = 0.0;
@@ -389,10 +390,10 @@ void masterIntelligence::handleGesture(){
     pos[1] = 1.9;
   else if (pos[1] < -1.9)
     pos[1] = -1.9;
-  if (pos[2] < -3.14/2.0)
-    pos[2] = -3.14/2.0;
-  else if (pos[2] > 3.14/2.0)
-    pos[2] = 3.14/2.0;
+  if (pos[2] < -3.14/1.8)
+    pos[2] = -3.14/1.8;
+  else if (pos[2] > 3.14/1.8)
+    pos[2] = 3.14/1.8;
   if (pos[3] < -3.14/2.0)
     pos[3] = -3.14/2.0;
   else if (pos[3] > 0.0)
@@ -402,6 +403,7 @@ void masterIntelligence::handleGesture(){
   else if (pos[4] < 0.0)
     pos[4] = 0.0;
 
+    /*
   // Joint state publisher for RVIZ debugging
   joint_state_msg.header.stamp = ros::Time::now();
   joint_state_msg.name.clear();
@@ -420,7 +422,7 @@ void masterIntelligence::handleGesture(){
   joint_state_msg.position.push_back(pos[4]);
   // send the joint state and transform
   joint_pub.publish(joint_state_msg);
-
+  */
 
 
 

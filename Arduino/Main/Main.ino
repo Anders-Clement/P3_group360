@@ -38,6 +38,8 @@ float joint0_offset = 0;
 bool setOffset = false;
 bool rosConnected = false;
 unsigned char checkTimer = 0;
+unsigned long runTime;
+
 
 //PID Controller
 float thetas[5];
@@ -100,41 +102,57 @@ void setup()
   updateTorques(torques); //send the torques to our motors
 
   display_ptr->setStatus("Running"); //good to go!
+  runTime = millis();
 }
 
 void loop()
 {
-  buzzer->update();
-  getPositionsVelocities();  //update data from motors
-  float* torques = PID_Controller_ptr->update();  //calculate our torques with the controller
-  updateTorques(torques); //send the torques to our motors
-
-  publishAngVel(); //publish to ros angles and velocities
-  nh.spinOnce(); //process callback queue
-
-  //Check if connected to ROS, and keep the status printed on the screen
-  if(rosConnected == false)
+  unsigned long now = millis();
+  if(now > runTime)
   {
-    if(nh.connected())
-    {
-      rosConnected = true;
-      display_ptr->setConnect("True");
-      buzzer->buzz(200);
-    }
-    else
-      display_ptr->setConnect("False");
-  }
-  else if (checkTimer > 30) {
-    if(!nh.connected()) //check if disconnected from ROS
-    {
-      rosConnected = false;
-      int tmp_trajectory[15] = {thetas[0]*1000.0, 0,0, thetas[1]*1000.0, 0,0,thetas[2]*1000.0, 0,0,thetas[3]*1000.0, 0,0,thetas[4]*1000.0, 0,0,};
-      PID_Controller_ptr->trajectoryFunk(tmp_trajectory); //saves the trajectory
-    }
+    runTime += 33;
+    buzzer->update();
+    getPositionsVelocities();  //update data from motors
+    float* torques = PID_Controller_ptr->update();  //calculate our torques with the controller
+    updateTorques(torques); //send the torques to our motors
+    nh.spinOnce();
+    publishAngVel(); //publish to ros angles and velocities
+    nh.spinOnce();
 
-    checkTimer = 0;
+    //unsigned long start = micros();
+     //process callback queue
+    //unsigned long timeSpent = micros()-start;
+
+    //runTime = millis()-now;
+    //char result[8]; // Buffer big enough for 7-character float
+    //dtostrf(runTime, 6, 2, result); // Leave room for too large numbers!
+    //nh.loginfo(result);
+    /*
+    //Check if connected to ROS, and keep the status printed on the screen
+    if(rosConnected == false)
+    {
+      if(nh.connected())
+      {
+        rosConnected = true;
+        display_ptr->setConnect("True");
+        buzzer->buzz(200);
+      }
+      else
+        display_ptr->setConnect("False");
+    }
+    else if (checkTimer > 30) {
+      if(!nh.connected()) //check if disconnected from ROS
+      {
+        rosConnected = false;
+        int tmp_trajectory[15] = {thetas[0]*1000.0, 0,0, thetas[1]*1000.0, 0,0,thetas[2]*1000.0, 0,0,thetas[3]*1000.0, 0,0,thetas[4]*1000.0, 0,0,};
+        PID_Controller_ptr->trajectoryFunk(tmp_trajectory); //saves the trajectory
+      }
+
+      checkTimer = 0;
+    }
+    checkTimer++;
+    */
   }
-  checkTimer++;
 }
 
 void trajectory_sub(const std_msgs::Int16MultiArray& incoming_msg)

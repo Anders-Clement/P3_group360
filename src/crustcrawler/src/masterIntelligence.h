@@ -10,7 +10,7 @@
 #include <geometry_msgs/Twist.h>
 
 #define UPDATE_RATE 20
-#define move_pose 0.025
+#define move_pose 0.018
 #ifndef CRUSTCRAWLER_MASTER_H
 #define CRUSTCRAWLER_MASTER_H
 

@@ -13,10 +13,10 @@ int main(int argc, char **argv){
 
 
   while (ros::ok()){
-    master_node->handleGesture();
+    //master_node->handleGesture();
 
     ros::spinOnce();
-    loop_rate.sleep();
+    //loop_rate.sleep();
   }
   return 0;
 }
