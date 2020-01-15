@@ -287,7 +287,7 @@ void masterIntelligence::handleGesture(){
             break;
           }
           case 3:{ // same as case 2 just with gesture 3
-            if(lastMacroSet != 3)
+            if(lastMacroSet < 0)
             {
               lastMacroSet = 3;
               lastMacroSetTime = ros::Time::now();
@@ -314,7 +314,7 @@ void masterIntelligence::handleGesture(){
             break;
           }
           case 4:{ // same as case 2 just with gesture 4
-            if(lastMacroSet != 4)
+            if(lastMacroSet < 0)
             {
               lastMacroSet = 4;
               lastMacroSetTime = ros::Time::now();
@@ -341,7 +341,7 @@ void masterIntelligence::handleGesture(){
             break;
           }
           case 5:{ // same as case 2 just with gesture 5
-            if(lastMacroSet != 5)
+            if(lastMacroSet < 0)
             {
               lastMacroSet = 5;
               lastMacroSetTime = ros::Time::now();
