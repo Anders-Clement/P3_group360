@@ -132,8 +132,8 @@ float* PID_Controller::calculateTorque()
   //    FRICTION, v_fric is viscous friction, c_fric is coulumb friction
   //    Values are guesses, be careful!
   
-  float v_fric[5] = {0.05, 0.0, 0.0, 0.0, 0.0};
-  float c_fric[5] = {0.04, 0.0, 0.0, 0.0, 0.0};
+  float v_fric[3] = {0.05, 0.0, 0.0};
+  float c_fric[3] = {0.04, 0.0, 0.0};
 
   for (size_t i = 0; i < 3; i++) {
     
