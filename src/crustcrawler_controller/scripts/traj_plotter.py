@@ -19,9 +19,15 @@ running = False
 firstRun = False
 start_time = 0.0
 
+a = [[]]
+pub_array = Int16MultiArray()
+pub_array.data = [0]*15
+indexForArray = 0
+
 
 def callbackActual(data):
     global start_time
+    global indexForArray
 
     if not running:
         return
@@ -36,6 +42,25 @@ def callbackActual(data):
         actualPos[i].append(float(data.data[0 + (i*2)]/1000.0))
         actualVel[i].append(float(data.data[1 + (i*2)]/1000.0))
 
+    t = rospy.get_rostime().to_sec() - start_time
+    time.append(t)
+
+    for i in range(0, 5): # calculates the theta, thetadot and thetadotdot for all joints
+        pos[i].append(a[0][i] + a[1][i] * t + a[2][i] * pow(t, 2.0) + a[3][i] * pow(t, 3.0))
+        vel[i].append(a[1][i] + 2.0 * a[2][i] * t + 3.0 * a[3][i] * pow(t, 2.0))
+        acc[i].append(2.0 * a[2][i] + 6.0 * a[3][i] * t)
+
+
+
+    for i in range(0,5):
+        pub_array.data[(i)*3] = (int(pos[i][indexForArray]*1000.0))
+        pub_array.data[(i)*3+1] = (int(vel[i][indexForArray]*1000.0))
+        pub_array.data[(i)*3+2] = (int(acc[i][indexForArray]*1000.0))
+
+    traj_pub.publish(pub_array)
+
+    indexForArray = indexForArray + 1
+
 
 
 def listener():
@@ -43,6 +68,8 @@ def listener():
     global firstRun
     global traj_start
     global start_time
+    global a
+    global traj_pub
 
     rospy.init_node('listener', anonymous=True)
     rospy.Subscriber('/crustcrawler/getAngleVel',Int16MultiArray, callbackActual)
@@ -52,7 +79,7 @@ def listener():
 
     running = True
 
-    if False:
+    if True:
         traj_start = [0, 0, 0, 0, 0]
         traj_end = [1, 1, 1, -1, 1]
     else:
@@ -81,7 +108,6 @@ def listener():
     tf = 5.0
     a = [[0 for y in range(5)] for x in range(5)]
     start_time = rospy.get_rostime().to_sec()
-    indexForArray = 0
 
 
     for i in range(0, 5):  # calculates the 'a' coefficients using goal-ang and -vel
@@ -90,31 +116,11 @@ def listener():
         a[2][i] = 3.0 / (pow(tf, 2.0)) * (traj_end[i] - traj_start[i]) - 2.0 / tf * 0.0 - 1.0 / tf * 0.0
         a[3][i] = -2.0 / (pow(tf, 3.0)) * (traj_end[i] - traj_start[i]) + 1.0 / (pow(tf, 2.0)) * (0.0 + 0.0)
 
-    while not rospy.is_shutdown():
-        t = rospy.get_rostime().to_sec() - start_time
-        if t > tf:
-            break
-        time.append(t)
-
-
-
-        for i in range(0, 5): # calculates the theta, thetadot and thetadotdot for all joints
-            pos[i].append(a[0][i] + a[1][i] * t + a[2][i] * pow(t, 2.0) + a[3][i] * pow(t, 3.0))
-            vel[i].append(a[1][i] + 2.0 * a[2][i] * t + 3.0 * a[3][i] * pow(t, 2.0))
-            acc[i].append(2.0 * a[2][i] + 6.0 * a[3][i] * t)
-
-        pub_array = Int16MultiArray()
-        pub_array.data = [0]*15
-
-        for i in range(0,5):
-            pub_array.data[(i)*3] = (int(pos[i][indexForArray]*1000.0))
-            pub_array.data[(i)*3+1] = (int(vel[i][indexForArray]*1000.0))
-            pub_array.data[(i)*3+2] = (int(acc[i][indexForArray]*1000.0))
-
-        traj_pub.publish(pub_array)
-
-        indexForArray = indexForArray + 1
+    while running:
+        if start_time + 5 < rospy.get_rostime().to_sec():
+            running = False
         rate.sleep()
+
 
     running = False
 

@@ -33,7 +33,7 @@ ros::Subscriber<std_msgs::Int16MultiArray> trajectorySubscriber("/crustcrawler/t
 ros::Subscriber<std_msgs::Int16> commandSub("/crustcrawler/command", &command_callback);
 ros::Subscriber<std_msgs::Int16> modeSub("/crustcrawler/mode", &mode_callback);
 
-float motorOffsets[5] = {0, M_PI / 4.0, M_PI, M_PI * (3.0 / 4.0), M_PI};
+float motorOffsets[5] = {0, M_PI, M_PI, M_PI, M_PI};
 float joint0_offset = 0;
 bool setOffset = false;
 bool rosConnected = false;
@@ -216,12 +216,15 @@ void getPositionsVelocities()
     thetas[i - 1] = (controler_ptr->getPos(i) * 0.0015336f) - motorOffsets[i - 1];
     velocities[i - 1] = (float)controler_ptr->getVel(i) * 0.0229; //convert to rad/s (0.229rpm/step * 0.1(rad/sec)/rpm
   } //this for loop takes 18.3ms
+  //thetas[4] = -((controler_ptr->getPos(5) * 0.0015336f) - motorOffsets[4]);
+  //velocities[4] = -((float)controler_ptr->getVel(5) * 0.0229); //convert to rad/s (0.229rpm/step * 0.1(rad/sec)/rpm
 
   if (setOffset) {
     joint0_offset = thetas[0];
     setOffset = false;
   }
   thetas[0] = thetas[0] - joint0_offset;
+
 }
 
 void updateTorques(float* torqueArray)

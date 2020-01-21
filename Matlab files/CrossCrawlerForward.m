@@ -1,9 +1,7 @@
 clear; clc;
 
-theta1=deg2rad(0);
-theta2=deg2rad(90);
-theta3=deg2rad(-90);
-theta4=deg2rad(0);
+syms theta1 theta2 theta3 theta4
+
 d1 = 0.055;
 a3 = 0.22;
 a4 = 0.15;

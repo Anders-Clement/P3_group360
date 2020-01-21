@@ -224,17 +224,17 @@ void masterIntelligence::handleGesture(){
             break;
           }
           case 2:{
-            pos[3] += move_pose;
-            vel[3] = move_pose*UPDATE_RATE;
-            pos[4] -= move_pose;
-            vel[4] = -move_pose*UPDATE_RATE;
-            break;
-          }
-          case 3:{
             pos[3] -= move_pose;
             vel[3] = -move_pose*UPDATE_RATE;
             pos[4] += move_pose;
             vel[4] = move_pose*UPDATE_RATE;
+            break;
+          }
+          case 3:{
+            pos[3] += move_pose;
+            vel[3] = move_pose*UPDATE_RATE;
+            pos[4] -= move_pose;
+            vel[4] = -move_pose*UPDATE_RATE;
             break;
           }
           case 4:{
@@ -449,14 +449,15 @@ void masterIntelligence::handleGesture(){
     pos[2] = -3.14/1.8;
   else if (pos[2] > 3.14/1.8)
     pos[2] = 3.14/1.8;
-  if (pos[3] < -3.14/2.0)
-    pos[3] = -3.14/2.0;
-  else if (pos[3] > 0.0)
+  if (pos[3] > 3.14/2.0)
+    pos[3] = 3.14/2.0;
+  else if (pos[3] < 0.0)
     pos[3] = 0.0;
-  if (pos[4] > 3.14/2.0)
-    pos[4] = 3.14/2.0;
-  else if (pos[4] < 0.0)
+  if (pos[4] < -3.14/2.0)
+    pos[4] = -3.14/2.0;
+  else if (pos[4] > 0.0)
     pos[4] = 0.0;
+
 
     /*
   // Joint state publisher for RVIZ debugging

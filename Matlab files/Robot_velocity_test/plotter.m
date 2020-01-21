@@ -1,6 +1,6 @@
 close all
 
-table2plot = velocities_base;
+table2plot = vel_mtm;
 
 array2plot = table2array(table2plot(1,:));
 
