@@ -37,8 +37,10 @@ float motorOffsets[5] = {0, M_PI, M_PI, M_PI, M_PI};
 float joint0_offset = 0;
 bool setOffset = false;
 bool rosConnected = false;
+bool updateRosConnectScreen = false;
 unsigned char checkTimer = 0;
 unsigned long runTime;
+unsigned long lastTrajectoryTime;
 
 
 //PID Controller
@@ -103,6 +105,7 @@ void setup()
 
   display_ptr->setStatus("Running"); //good to go!
   runTime = millis();
+  lastTrajectoryTime = 0;
 }
 
 void loop()
@@ -119,6 +122,21 @@ void loop()
     publishAngVel(); //publish to ros angles and velocities
     nh.spinOnce();
 
+
+    if(rosConnected && millis() > lastTrajectoryTime + 100)
+    {
+      display_ptr->setConnect("False");
+      rosConnected = false;
+    }
+    if(updateRosConnectScreen)
+    {
+      updateRosConnectScreen = false;
+      if(!rosConnected)
+      {
+        display_ptr->setConnect("True");
+        rosConnected = true;
+      }
+    }
     //unsigned long start = micros();
      //process callback queue
     //unsigned long timeSpent = micros()-start;
@@ -158,6 +176,8 @@ void loop()
 void trajectory_sub(const std_msgs::Int16MultiArray& incoming_msg)
 {
   PID_Controller_ptr->trajectoryFunk(incoming_msg.data); //saves the trajectory
+  lastTrajectoryTime = millis();
+  updateRosConnectScreen = true;
 }
 
 void command_callback(const std_msgs::Int16& msg)
